@@ -56,8 +56,11 @@ export default Ember.Component.extend(ClusterDriver, {
     }],
   masterVersions: [
     {
-      label: 'v1.11.3',
-      value: 'v1.11.3',
+      label: 'v1.13.10',
+      value: 'v1.13.10',
+    }, {
+      label: 'v1.15.6',
+      value: 'v1.15.6',
     }],
   eipChargeModeContent: [
     {
@@ -216,7 +219,7 @@ export default Ember.Component.extend(ClusterDriver, {
         dataVolumeSize:        100,
         vpcId:                 null,
         clusterType:           'VirtualMachine',
-        masterVersion:         'v1.11.3',
+        masterVersion:         'v1.13.10',
         billingMode:           0,
         containerNetworkMode:  'overlay_l2',
         clusterFlavor:         'cce.s2.small',
