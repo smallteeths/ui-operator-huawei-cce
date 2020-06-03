@@ -113,11 +113,11 @@ export default Ember.Component.extend(ClusterDriver, {
     }],
   nodeOperationSystemContent: [
     {
-      label: 'EulerOS 2.2',
-      value: 'EulerOS 2.2',
+      label: 'EulerOS 2.5',
+      value: 'EulerOS 2.5',
     }, {
-      label: 'CentOS 7.4',
-      value: 'CentOS 7.4',
+      label: 'CentOS 7.6',
+      value: 'CentOS 7.6',
     }],
   containerNetworkCidrContent: [
     {
@@ -228,7 +228,7 @@ export default Ember.Component.extend(ClusterDriver, {
         nodeCount:             1,
         rootVolumeSize:        40,
         externalServerEnabled: false,
-        nodeOperationSystem:   'EulerOS 2.2',
+        nodeOperationSystem:   'EulerOS 2.5',
         containerNetworkCidr:  '172.16.0.0/16',
         bmsIsAutoRenew:        'false',
         userName:              'root',
