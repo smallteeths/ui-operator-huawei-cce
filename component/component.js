@@ -293,7 +293,7 @@ export default Ember.Component.extend(ClusterDriver, {
     },
 
     async checkAccount(cb) {
-      const requiredConfig = ['projectId', 'accessKey', 'secretKey']
+      const requiredConfig = ['projectId', 'accessKey', 'secretKey', 'region']
       const requiredCluster = ['name']
 
       set(this, 'errors', [])
