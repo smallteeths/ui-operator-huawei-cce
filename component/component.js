@@ -289,8 +289,8 @@ export default Ember.Component.extend(ClusterDriver, {
       set(this, 'config.eipIds', selectedOptions || []);
     },
 
-    checkAccount(cb) {
-      const requiredConfig = ['projectId', 'accessKey', 'secretKey', 'region']
+    async checkAccount(cb) {
+      const requiredConfig = ['projectId', 'accessKey', 'secretKey']
       const requiredCluster = ['name']
 
       set(this, 'errors', [])
@@ -312,92 +312,16 @@ export default Ember.Component.extend(ClusterDriver, {
       });
 
       try {
-        const location = window.location;
-        const region = get(this, 'config.region')
-        let endpoint = `vpc.${ region }.myhuaweicloud.com`;
+        await this.getVpcs();
+        await this.getSubnet();
+        await this.getNetwork();
 
-        endpoint = `${ get(this, 'app.proxyEndpoint')  }/${  endpoint.replace('//', '/') }`;
-        endpoint = `${ location.origin }${ endpoint }`;
-
-        var client = new HW.ECS({
-          ak:           get(this, 'config.accessKey'),
-          sk:           get(this, 'config.secretKey'),
-          projectId:    get(this, 'config.projectId'),
-          endpoint,
-          region,
-          toSignedHost: `vpc.${ region }.myhuaweicloud.com`,
-        })
-
-        client.getVpcs((err, response) => {
-          if ( err ) {
-            let errors = this.get('errors') || [];
-
-            errors.pushObject(err);
-            set(this, 'errors', errors);
-            cb();
-
-            return;
-          }
-
-          set(this, 'vpcs', response.body.vpcs)
-
-          if (get(this, 'mode') === 'new') {
-            set(this, 'config.vpcId', response.body.vpcs[0] && response.body.vpcs[0].id || null)
-          }
-
-          client.getSubnet((err, response) => {
-            if (err) {
-              let errors = this.get('errors') || [];
-
-              errors.pushObject(err);
-              set(this, 'errors', errors);
-              cb();
-
-              return;
-            }
-
-            set(this, 'subnets', response.body.subnets)
-
-            if (get(this, 'mode') === 'new') {
-              set(this, 'config.subnetId', response.body.subnets[0] && response.body.subnets[0].id || null)
-            }
-
-            client.getPublicips((err, response) => {
-              if (err) {
-                let errors = this.get('errors') || [];
-
-                errors.pushObject(err);
-                set(this, 'errors', errors);
-                cb();
-
-                return;
-              }
-
-              set(this, 'eipIds', response.body.publicips)
-
-              client.getNetwork((err, response) => {
-                if (err) {
-                  let errors = this.get('errors') || []
-
-                  errors.pushObject(err)
-                  set(this, 'errors', errors)
-                  cb()
-
-                  return
-                }
-                set(this, 'publicCloud', true)
-                set(this, 'networks', response.body.networks)
-
-                set(this, 'step', 2);
-                cb();
-              })
-            })
-          })
-        })
-      } catch (err) {
+        set(this, 'step', 2);
+        cb();
+      } catch (e) {
         const errors = get(this, 'errors') || [];
 
-        errors.pushObject(err.message || err);
+        errors.pushObject(e.message || e);
         set(this, 'errors', errors);
         cb();
 
@@ -939,4 +863,77 @@ export default Ember.Component.extend(ClusterDriver, {
 
     return this._super(...arguments);
   },
+
+  getVpcs() {
+    set(this, 'vpcs', []);
+    set(this, 'vpcId', null);
+
+    return new EmberPromise((resolve, reject) => {
+      this.getVpcClient().getVpcs((err, res) => {
+        if ( err ) {
+          return reject(err)
+        }
+
+        set(this, 'vpcs', res.body.vpcs)
+
+        if (get(this, 'mode') === 'new') {
+          set(this, 'config.vpcId', res.body.vpcs[0] && res.body.vpcs[0].id || null)
+        }
+
+        resolve()
+      })
+    })
+
+  },
+
+  getSubnet() {
+    return new EmberPromise((resolve, reject) => {
+      this.getVpcClient().getSubnet((err, response) => {
+        if (err) {
+          return reject(err);
+        }
+
+        set(this, 'subnets', response.body.subnets)
+
+        if (get(this, 'mode') === 'new') {
+          set(this, 'config.subnetId', response.body.subnets[0] && response.body.subnets[0].id || null)
+        }
+
+        resolve()
+      })
+    })
+
+  },
+
+  getNetwork() {
+    return new EmberPromise((resolve, reject) => {
+      this.getVpcClient().getNetwork((err, response) => {
+        if (err) {
+          return reject(err)
+        }
+        set(this, 'publicCloud', true)
+        set(this, 'networks', response.body.networks)
+
+        resolve()
+      })
+    })
+  },
+
+  getVpcClient() {
+    const location = window.location;
+    const region = get(this, 'config.region')
+    let endpoint = `vpc.${ region }.myhuaweicloud.com`;
+
+    endpoint = `${ get(this, 'app.proxyEndpoint')  }/${  endpoint.replace('//', '/') }`;
+    endpoint = `${ location.origin }${ endpoint }`;
+
+    return new HW.ECS({
+      ak:           get(this, 'config.accessKey'),
+      sk:           get(this, 'config.secretKey'),
+      projectId:    get(this, 'config.projectId'),
+      endpoint,
+      region,
+      toSignedHost: `vpc.${ region }.myhuaweicloud.com`,
+    })
+  }
 });
