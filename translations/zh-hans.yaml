@@ -36,6 +36,10 @@ clusterNew:
       detail: 为集群自定义Kubernetes选项
     clusterType:
       label: 集群类型
+      VirtualMachine:
+        label: 混合集群
+      BareMetal:
+        label: 裸金属集群
     clusterFlavor:
       label: Cluster Flavor
     masterVersion:

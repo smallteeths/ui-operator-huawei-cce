@@ -36,6 +36,10 @@ clusterNew:
       detail: Customize the cluster that will be used to launch Huawei Cloud Container Engine.
     clusterType:
       label: Cluster Type
+      VirtualMachine:
+        label: VirtualMachine
+      BareMetal:
+        label: BareMetal
     clusterFlavor:
       label: Cluster Flavor
     masterVersion:
