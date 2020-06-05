@@ -1,7 +1,6 @@
 <section class="horizontal-form">
   {{#accordion-list showExpandAll=false as |al expandFn|}}
-    {{#if (eq step 1)}}
-      {{#accordion-list-item title=(t "clusterNew.huaweicce.access.title")
+    {{#accordion-list-item title=(t "clusterNew.huaweicce.access.title")
                              detail=(t "clusterNew.huaweicce.access.detail")
                              expandOnInit=true
                              expandAll=al.expandAll
@@ -12,20 +11,30 @@
             <label class="acc-label">
               {{t "clusterNew.huaweicce.region.label"}}
             </label>
-            {{searchable-select
-                    class="form-control"
-                    content=zones
+            {{#input-or-display
+                    editable=(eq step 1)
                     value=config.region
-                    localizedLabel=true
             }}
+              {{searchable-select
+                      class="form-control"
+                      content=zones
+                      value=config.region
+                      localizedLabel=true
+              }}
+            {{/input-or-display}}
             <p class="text-info text-small m-0">{{t "clusterNew.huaweicce.region.helpText" htmlSafe=true}}</p>
           </div>
           <div class="col span-6 mb-0">
             <label class="acc-label">{{t "clusterNew.huaweicce.projectId.label"}}{{field-required}}</label>
-            {{input type="text"
+            {{#input-or-display
+                    editable=(eq step 1)
                     value=config.projectId
-                    classNames="form-control"
-                    placeholder=(t "clusterNew.huaweicce.projectId.placeholder")}}
+            }}
+              {{input type="text"
+                      value=config.projectId
+                      classNames="form-control"
+                      placeholder=(t "clusterNew.huaweicce.projectId.placeholder")}}
+            {{/input-or-display}}
             <p class="text-info text-small m-0">{{t "clusterNew.huaweicce.projectId.help" htmlSafe=true}}</p>
           </div>
         </div>
@@ -35,57 +44,33 @@
               <label class="acc-label">
                 {{t "clusterNew.huaweicce.accessKey.label"}}{{field-required}}
               </label>
-              {{input type="text"
+              {{#input-or-display
+                      editable=(eq step 1)
                       value=config.accessKey
-                      classNames="form-control"
-                      placeholder=(t "clusterNew.huaweicce.accessKey.placeholder")}}
+              }}
+                {{input type="text"
+                        value=config.accessKey
+                        classNames="form-control"
+                        placeholder=(t "clusterNew.huaweicce.accessKey.placeholder")}}
+              {{/input-or-display}}
               <p class="text-info text-small m-0">{{t "clusterNew.huaweicce.accessKey.help" htmlSafe=true}}</p>
             </div>
             <div class="col span-6 mb-0">
               <label class="acc-label">{{t "clusterNew.huaweicce.secretKey.label"}}{{field-required}}</label>
-              {{input type="password"
+              {{#input-or-display
+                      editable=(eq step 1)
                       value=config.secretKey
-                      classNames="form-control"
-                      placeholder=(t "clusterNew.huaweicce.secretKey.placeholder")}}
+              }}
+                {{input type="password"
+                        value=config.secretKey
+                        classNames="form-control"
+                        placeholder=(t "clusterNew.huaweicce.secretKey.placeholder")}}
+              {{/input-or-display}}
             </div>
           </div>
         {{/unless}}
       {{/accordion-list-item}}
-    {{/if}}
     {{#if (or (eq step 2) (eq step 3))}}
-      {{#accordion-list-item title=(t "clusterNew.huaweicce.access.title")
-                             detail=(t "clusterNew.huaweicce.access.detail")
-                             expandOnInit=false
-                             expandAll=al.expandAll
-                             expand=(action expandFn)
-      }}
-        <div class="row">
-          <div class="col span-6 mb-0">
-            <label class="acc-label">
-              {{t "clusterNew.huaweicce.region.label"}}
-            </label>
-            <div>{{config.zone}}</div>
-          </div>
-          <div class="col span-6 mb-0">
-            <label class="acc-label">{{t "clusterNew.huaweicce.projectId.label"}}</label>
-            <div>{{config.projectId}}</div>
-          </div>
-        </div>
-        {{#unless authConfigred}}
-          <div class="row">
-            <div class="col span-6 mb-0">
-              <label class="acc-label">
-                {{t "clusterNew.huaweicce.accessKey.label"}}
-              </label>
-              <div>{{config.accessKey}}</div>
-            </div>
-            <div class="col span-6 mb-0">
-              <label class="acc-label">{{t "clusterNew.huaweicce.secretKey.label"}}</label>
-              <div class="text-muted text-italic">{{t "nodeDriver.amazoneks.sessionToken.provided"}}</div>
-            </div>
-          </div>
-        {{/unless}}
-      {{/accordion-list-item}}
       {{#accordion-list-item title=(t "clusterNew.huaweicce.clusterOption.title")
                              detail=(t "clusterNew.huaweicce.clusterOption.detail")
                              expandOnInit=true
@@ -97,26 +82,30 @@
             <label class="acc-label">
               {{t "clusterNew.huaweicce.clusterType.label"}}
             </label>
-            {{#if editing}}
-              <div>
-                {{config.clusterType}}
-              </div>
-            {{else}}
+            {{#input-or-display
+                    editable=(and (eq step 2) (not editing))
+                    value=config.clusterType
+            }}
               {{new-select classNames="form-control"
                            value=config.clusterType
                            content=clusterType
                            localizedLabel=true
               }}
-            {{/if}}
+            {{/input-or-display}}
           </div>
           <div class="col span-6 mb-0">
             <label class="acc-label">
               {{t "clusterNew.huaweicce.description.label"}}
             </label>
-            {{input type="text"
+            {{#input-or-display
+                    editable=(eq step 2)
                     value=config.description
-                    classNames="form-control"
-                    placeholder=(t "clusterNew.huaweicce.description.placeholder")}}
+            }}
+              {{input type="text"
+                      value=config.description
+                      classNames="form-control"
+                      placeholder=(t "clusterNew.huaweicce.description.placeholder")}}
+            {{/input-or-display}}
           </div>
         </div>
         <div class="row">
@@ -124,26 +113,28 @@
             <label class="acc-label">
               {{t "clusterNew.huaweicce.masterVersion.label"}}{{field-required}}
             </label>
-            {{#if editing}}
-              <div>{{config.masterVersion}}</div>
-            {{else}}
+            {{#input-or-display
+                    editable=(and (eq step 2) (not editing))
+                    value=config.masterVersion
+            }}
               {{searchable-select class="form-control"
                                   content=masterVersions
                                   value=config.masterVersion
                                   allowCustom=true
               }}
-            {{/if}}
+            {{/input-or-display}}
           </div>
           <div class="col span-6 mb-0">
             <label class="acc-label">{{t "clusterNew.huaweicce.managementScale.label"}}</label>
-            {{#if editing}}
-              <div>{{managementScaleDisplay}}</div>
-            {{else}}
+            {{#input-or-display
+                    editable=(and (eq step 2) (not editing))
+                    value=managementScale
+            }}
               {{new-select classNames="form-control"
                            value=managementScale
                            content=managementScaleContent
               }}
-            {{/if}}
+            {{/input-or-display}}
           </div>
         </div>
         <div class="row">
@@ -151,7 +142,7 @@
             <label class="acc-label">
               {{t "clusterNew.huaweicce.highAvailability.label"}}{{field-required}}
             </label>
-            {{#if editing}}
+            {{#if (or editing (not (eq step 2)))}}
               {{#if (or (eq highAvailabilityEnabled "s2") (eq highAvailabilityEnabled "t2"))}}
                 <div>{{t "generic.enabled"}}</div>
               {{else}}
@@ -184,15 +175,16 @@
           </div>
           <div class="col span-6 mb-0">
             <label class="acc-label">{{t "clusterNew.huaweicce.containerNetworkMode.label"}}</label>
-            {{#if editing}}
-              <div>{{config.containerNetworkMode}}</div>
-            {{else}}
+            {{#input-or-display
+                    editable=(and (eq step 2) (not editing))
+                    value=config.containerNetworkMode
+            }}
               {{new-select classNames="form-control"
                            value=config.containerNetworkMode
                            content=containerNetworkModeContent
                            localizedLabel=true
               }}
-            {{/if}}
+            {{/input-or-display}}
           </div>
         </div>
         <div class="row">
@@ -200,7 +192,7 @@
             <label class="acc-label">
               {{t "clusterNew.huaweicce.containerNetworkCidr.label"}}{{field-required}}
             </label>
-            {{#if editing}}
+            {{#if (or editing (not (eq step 2)))}}
               <div>
                 {{#if config.containerNetworkCidr}}
                   {{config.containerNetworkCidr}}
@@ -218,7 +210,7 @@
           </div>
           <div class="col span-6 mb-0">
             <label class="acc-label">{{t "clusterNew.huaweicce.vpcId.label"}}{{field-required}}</label>
-            {{#if editing}}
+            {{#if (or editing (not (eq step 2)))}}
               <div>
                 {{editedVpcName}}
               </div>
@@ -235,7 +227,7 @@
             <label class="acc-label">
               {{t "clusterNew.huaweicce.subnetId.label"}}{{field-required}}
             </label>
-            {{#if editing}}
+            {{#if (or editing (not (eq step 2)))}}
               <div>
                 {{editedSubnetName}}
               </div>
@@ -246,7 +238,7 @@
                              value=config.subnetId
                 }}
               {{else}}
-                <div style="mt-10">{{t "clusterNew.huaweicce.subnetId.none"}}</div>
+                <div>{{t "clusterNew.huaweicce.subnetId.none"}}</div>
               {{/if}}
             {{/if}}
           </div>
@@ -254,7 +246,7 @@
             <div class="col span-6 mb-0">
               <label class="acc-label">{{t "clusterNew.huaweicce.highwaySubnet.label"}}</label>
               {{#if (gt networkContent.length 0)}}
-                {{#if editing}}
+                {{#if (or editing (not (eq step 2)))}}
                   <div>
                     {{config.highwaySubnet}}
                   </div>
@@ -273,7 +265,7 @@
         <div class="row">
           <div class="col span-6 mb-0">
             <label class="acc-label">{{t "clusterNew.huaweicce.externalServerEnabled.label"}}</label>
-            {{#if editing}}
+            {{#if (or editing (not (eq step 2)))}}
               {{#if config.externalServerEnabled}}
                 <div>{{t "generic.enabled"}}</div>
               {{else}}
@@ -301,23 +293,24 @@
           {{#if config.externalServerEnabled}}
             <div class="col span-6">
               <label class="acc-label">{{t "clusterNew.huaweicce.clusterEipId.label"}}</label>
-              {{#if editing}}
-                <div>{{clusterEipName}}</div>
-              {{else}}
+              {{#input-or-display
+                      editable=(and (eq step 2) (not editing))
+                      value=clusterEipName
+              }}
                 {{new-select
                         classNames="form-control"
                         prompt=(t "clusterNew.huaweicce.clusterEipId.prompt")
                         value=config.clusterEipId
                         content=eipIdContent
                 }}
-              {{/if}}
+              {{/input-or-display}}
             </div>
           {{/if}}
         </div>
         <div class="row">
           <div class="col span-12 mb-0">
             <label class="acc-label">{{t "clusterNew.huaweicce.clusterLabels.label"}}</label>
-            {{#if editing}}
+            {{#if (or editing (not (eq step 2)))}}
               {{#if (gt config.labels.length 0)}}
                 {{huawei-user-labels
                         readOnly=true
