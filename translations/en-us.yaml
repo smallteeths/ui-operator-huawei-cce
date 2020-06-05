@@ -25,6 +25,18 @@ clusterNew:
       label: Region
       helpText: You can find instructions on how to obtain Region <a href="https://developer.huaweicloud.com/endpoint" target="_blank">here</a>.
       required: Region is required.
+      cn_north_1: CN North-Beijing1
+      cn_north_4: CN North-Beijing4
+      cn_east_3: CN East-Shanghai1
+      cn_east_2: CN East-Shanghai2
+      cn_south_1: CN South-Guangzhou
+      cn_southwest_2: CN Southwest-Guiyang1
+      ap_southeast_1: AP-Hong-Kong
+      ap_southeast_2: AP-Bangkok
+      ap_southeast_3: AP-Singapore
+      af_south_1: AF-Johannesburg
+      sa_brazil_1: LA-Sao Paulo1
+      la_south_2: LA-Santiago
     business:
       label: Business
     checkAccount: "Next: Configure cluster"
@@ -81,6 +93,12 @@ clusterNew:
     containerNetworkMode:
       label: Container Network Mode
       none: No config
+      overlay:
+        label: overlay_l2
+      underlayIpvlan:
+        label: underlay_ipvlan
+      vpcRouter:
+        label: vpc-router
     rootVolumeType:
       label: Root Volume Type
     rootVolumeSize:

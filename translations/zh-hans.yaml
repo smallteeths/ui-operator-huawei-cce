@@ -25,6 +25,18 @@ clusterNew:
       label: 区域
       helpText: 获取区域参考<a href="https://developer.huaweicloud.com/endpoint" target="_blank">这里</a>。
       required: 区域必须填写
+      cn_north_1: 华北-北京一
+      cn_north_4: 华北-北京四
+      cn_east_3: 华东-上海一
+      cn_east_2: 华东-上海二
+      cn_south_1: 华南-广州
+      cn_southwest_2: 西南-贵阳一
+      ap_southeast_1: 亚太-香港
+      ap_southeast_2: 亚太-曼谷
+      ap_southeast_3: 亚太-新加坡
+      af_south_1: 非洲-约翰内斯堡
+      sa_brazil_1: 拉美-圣保罗一
+      la_south_2: 拉美-圣地亚哥
     business:
       label: 业务
     checkAccount: '下一步: 配置集群'
@@ -81,6 +93,12 @@ clusterNew:
     containerNetworkMode:
       label: 网络模型
       none: 无配置
+      overlay:
+        label: 容器隧道网络
+      underlayIpvlan:
+        label: 'Underlay l2网络'
+      vpcRouter:
+        label: VPC网络
     rootVolumeType:
       label: 系统盘类型
     rootVolumeSize:

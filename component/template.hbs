@@ -16,7 +16,7 @@
                     class="form-control"
                     content=zones
                     value=config.region
-                    allowCustom=true
+                    localizedLabel=true
             }}
             <p class="text-info text-small m-0">{{t "clusterNew.huaweicce.region.helpText" htmlSafe=true}}</p>
           </div>
@@ -190,6 +190,7 @@
               {{new-select classNames="form-control"
                            value=config.containerNetworkMode
                            content=containerNetworkModeContent
+                           localizedLabel=true
               }}
             {{/if}}
           </div>
