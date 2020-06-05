@@ -84,7 +84,7 @@
             </label>
             {{#input-or-display
                     editable=(and (eq step 2) (not editing))
-                    value=config.clusterType
+                    value=clusterTypeShowValue
             }}
               {{new-select classNames="form-control"
                            value=config.clusterType
@@ -128,7 +128,7 @@
             <label class="acc-label">{{t "clusterNew.huaweicce.managementScale.label"}}</label>
             {{#input-or-display
                     editable=(and (eq step 2) (not editing))
-                    value=managementScale
+                    value=managementScaleShowValue
             }}
               {{new-select classNames="form-control"
                            value=managementScale
@@ -177,7 +177,7 @@
             <label class="acc-label">{{t "clusterNew.huaweicce.containerNetworkMode.label"}}</label>
             {{#input-or-display
                     editable=(and (eq step 2) (not editing))
-                    value=config.containerNetworkMode
+                    value=containerNetworkModeShowValue
             }}
               {{new-select classNames="form-control"
                            value=config.containerNetworkMode
@@ -248,7 +248,7 @@
               {{#if (gt networkContent.length 0)}}
                 {{#if (or editing (not (eq step 2)))}}
                   <div>
-                    {{config.highwaySubnet}}
+                    {{highwaySubnetShowValue}}
                   </div>
                 {{else}}
                   {{new-select classNames="form-control"

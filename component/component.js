@@ -72,6 +72,30 @@ const ZONES = [
   },
 ];
 
+const MANAGEMENT_SCALE_BAREMETAL = [
+  {
+    label: '10',
+    value: 'small',
+  }, {
+    label: '100',
+    value: 'medium',
+  }, {
+    label: '500',
+    value: 'large',
+  }]
+
+const MANAGEMENT_SCALE_VIRTUAL = [
+  {
+    label: '50',
+    value: 'small',
+  }, {
+    label: '200',
+    value: 'medium',
+  }, {
+    label: '1000',
+    value: 'large',
+  }]
+
 
 /*!!!!!!!!!!!DO NOT CHANGE START!!!!!!!!!!!*/
 export default Ember.Component.extend(ClusterDriver, {
@@ -688,34 +712,41 @@ export default Ember.Component.extend(ClusterDriver, {
     }
   }),
 
+  clusterTypeShowValue: computed('config.clusterType', 'intl.locale', function() {
+    const intl    = get(this, 'intl');
+    const choices = get(this, 'clusterType');
+    const current = get(this, 'config.clusterType');
+
+    return intl.t(get(choices.findBy('value', current), 'label'));
+  }),
+
+  containerNetworkModeShowValue: computed('config.containerNetworkMode', 'intl.locale', function() {
+    const intl    = get(this, 'intl');
+    const choices = get(this, 'containerNetworkModeContent');
+    const current = get(this, 'config.containerNetworkMode');
+
+    return intl.t(get(choices.findBy('value', current), 'label'));
+  }),
+
   managementScaleContent: computed('config.clusterType', function() {
     const clusterType = get(this, 'config.clusterType')
 
     if (clusterType === 'BareMetal') {
-      return [
-        {
-          label: '10',
-          value: 'small',
-        }, {
-          label: '100',
-          value: 'medium',
-        }, {
-          label: '500',
-          value: 'large',
-        }]
+      return MANAGEMENT_SCALE_BAREMETAL
     }
 
-    return [
-      {
-        label: '50',
-        value: 'small',
-      }, {
-        label: '200',
-        value: 'medium',
-      }, {
-        label: '1000',
-        value: 'large',
-      }]
+    return MANAGEMENT_SCALE_VIRTUAL
+  }),
+
+  managementScaleShowValue: computed('config.clusterType', 'managementScale', function() {
+    const clusterType = get(this, 'config.clusterType');
+    let choices       = MANAGEMENT_SCALE_VIRTUAL;
+    const current     = get(this, 'managementScale');
+
+    if (clusterType === 'BareMetal') {
+      choices = MANAGEMENT_SCALE_BAREMETAL
+    }
+    return get(choices.findBy('value', current), 'label');
   }),
 
   vpcContent: computed('vpcs.[]', function() {
@@ -852,6 +883,13 @@ export default Ember.Component.extend(ClusterDriver, {
       label: a.name,
       value: a.id
     }))
+  }),
+
+  highwaySubnetShowValue: computed('config.highwaySubnet', 'networkContent.[]', function() {
+    const choices = get(this, 'networkContent');
+    const current = get(this, 'config.highwaySubnet');
+
+    return get(choices.findBy('value', current), 'label');
   }),
 
   billingModeName: computed('config.billingMode', function() {
