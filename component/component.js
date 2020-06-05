@@ -712,6 +712,14 @@ export default Ember.Component.extend(ClusterDriver, {
     }
   }),
 
+  regionShowValue: computed('config.region', 'intl.locale', function() {
+    const intl    = get(this, 'intl');
+    const choices = get(this, 'zones');
+    const current = get(this, 'config.region');
+
+    return intl.t(get(choices.findBy('value', current), 'label'))
+  }),
+
   clusterTypeShowValue: computed('config.clusterType', 'intl.locale', function() {
     const intl    = get(this, 'intl');
     const choices = get(this, 'clusterType');

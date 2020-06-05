@@ -13,7 +13,7 @@
             </label>
             {{#input-or-display
                     editable=(eq step 1)
-                    value=config.region
+                    value=regionShowValue
             }}
               {{searchable-select
                       class="form-control"
@@ -59,7 +59,7 @@
               <label class="acc-label">{{t "clusterNew.huaweicce.secretKey.label"}}{{field-required}}</label>
               {{#input-or-display
                       editable=(eq step 1)
-                      value=config.secretKey
+                      value="*****"
               }}
                 {{input type="password"
                         value=config.secretKey
