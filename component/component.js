@@ -248,7 +248,7 @@ export default Ember.Component.extend(ClusterDriver, {
   highAvailabilityEnabled: 's2',
   managementScale:         'small',
   validityPeriod:          '1 month',
-  authConfigred:           false,
+  authConfigured:           false,
   publicCloud:             null,
 
   editing:                 equal('mode', 'edit'),
@@ -399,7 +399,7 @@ export default Ember.Component.extend(ClusterDriver, {
       }
     },
 
-    configreNode(cb) {
+    async configureNode(cb) {
       const requiredConfig = ['vpcId', 'subnetId', 'containerNetworkCidr']
 
       set(this, 'errors', [])
@@ -413,88 +413,18 @@ export default Ember.Component.extend(ClusterDriver, {
         return;
       }
 
-      if (get(this, 'authConfigred')) {
+      if (get(this, 'authConfigured')) {
         set(this, 'step', 3)
         cb()
 
         return
       }
       try {
-        const location = window.location;
-        const region = get(this, 'config.region')
-        let endpoint = `ecs.${ region }.myhuaweicloud.com`;
+        await this.getAvaliableZone();
+        await this.listCloudServerFlavors();
+        await this.listKeypairs();
 
-        endpoint = `${ get(this, 'app.proxyEndpoint')  }/${  endpoint.replace('//', '/') }`;
-        endpoint = `${ location.origin }${ endpoint }`;
-
-        var client = new HW.ECS({
-          ak:           get(this, 'config.accessKey'),
-          sk:           get(this, 'config.secretKey'),
-          projectId:    get(this, 'config.projectId'),
-          endpoint,
-          region,
-          toSignedHost: `ecs.${ region }.myhuaweicloud.com`,
-          service:      'ecs',
-        })
-
-        client.listCloudServerFlavors((err, response) => {
-          if (err) {
-            let errors = this.get('errors') || [];
-
-            errors.pushObject(err);
-            set(this, 'errors', errors);
-            cb();
-
-            return;
-          }
-
-          set(this, 'nodeFlavors', response.body.flavors)
-
-          if (get(this, 'mode') === 'new') {
-            set(this, 'config.nodeFlavor', response.body.flavors[0] && response.body.flavors[0].name || null)
-          }
-          client.listKeypairs((err, response) => {
-            if (err) {
-              let errors = this.get('errors') || [];
-
-              errors.pushObject(err);
-              set(this, 'errors', errors);
-              cb();
-
-              return;
-            }
-
-            set(this, 'keypairs', response.body.keypairs)
-
-            const keypairs = response.body.keypairs || []
-
-            set(this, 'config.sshKey', keypairs[0] && keypairs[0].keypair.name)
-
-            client.getAvaliableZone((err, response) => {
-              if (err) {
-                let errors = this.get('errors') || [];
-
-                errors.pushObject(err);
-                set(this, 'errors', errors);
-                cb();
-
-                return;
-              }
-
-              const availableZones = (response.body.availabilityZoneInfo || []).filter((z) => z.zoneState.available)
-
-              set(this, 'availableZones', availableZones)
-
-              if (get(this, 'mode') === 'new') {
-                setProperties(this, {
-                  'config.keypairs':      response.body.availabilityZoneInfo[0] && response.body.availabilityZoneInfo[0].zoneName || null,
-                  'config.availableZone': availableZones.get('firstObject.zoneName'),
-                })
-              }
-              set(this, 'step', 3)
-            })
-          })
-        })
+        set(this, 'step', 3)
       } catch (err) {
         const errors = get(this, 'errors') || [];
 
@@ -709,6 +639,19 @@ export default Ember.Component.extend(ClusterDriver, {
         'config.bmsIsAutoRenew': 'false',
         'validityPeriod':        '1 month',
       })
+    }
+  }),
+
+  availableZoneChange: observer('config.availableZone', async function() {
+    try {
+      await this.listCloudServerFlavors();
+    } catch (err) {
+      const errors = get(this, 'errors') || [];
+
+      errors.pushObject(err.message || err);
+      set(this, 'errors', errors);
+
+      return;
     }
   }),
 
@@ -1040,7 +983,66 @@ export default Ember.Component.extend(ClusterDriver, {
     })
   },
 
-  getClient(prefix) {
+  listCloudServerFlavors() {
+    return new EmberPromise((resolve, reject) => {
+      this.getClient('ecs', { availabilityZone: get(this, 'config.availableZone') }).listCloudServerFlavors((err, response) => {
+        if (err) {
+          return reject(err)
+        }
+
+        set(this, 'nodeFlavors', response.body.flavors)
+
+        if (get(this, 'mode') === 'new') {
+          set(this, 'config.nodeFlavor', response.body.flavors[0] && response.body.flavors[0].name || null)
+        }
+
+        resolve()
+      })
+    })
+  },
+
+  listKeypairs() {
+    return new EmberPromise((resolve, reject) => {
+      this.getClient('ecs').listKeypairs((err, response) => {
+        if (err) {
+          return reject(err)
+        }
+
+        set(this, 'keypairs', response.body.keypairs)
+
+        const keypairs = response.body.keypairs || []
+
+        set(this, 'config.sshKey', keypairs[0] && keypairs[0].keypair.name)
+
+        resolve()
+      })
+    })
+  },
+
+  getAvaliableZone() {
+    return new EmberPromise((resolve, reject) => {
+      this.getClient('ecs').getAvaliableZone((err, response) => {
+        if (err) {
+          return reject(err)
+        }
+
+        const availableZones = (response.body.availabilityZoneInfo || []).filter((z) => z.zoneState.available)
+
+        set(this, 'availableZones', availableZones)
+
+        if (get(this, 'mode') === 'new') {
+          setProperties(this, {
+            'config.keypairs':      response.body.availabilityZoneInfo[0] && response.body.availabilityZoneInfo[0].zoneName || null,
+            'config.availableZone': availableZones.get('firstObject.zoneName'),
+          })
+        }
+
+        resolve()
+      })
+    })
+  },
+
+  getClient(prefix, extralParams = {}) {
     const location = window.location;
     const region = get(this, 'config.region')
     let endpoint = `${ prefix }.${ region }.myhuaweicloud.com`;
@@ -1048,13 +1050,13 @@ export default Ember.Component.extend(ClusterDriver, {
     endpoint = `${ get(this, 'app.proxyEndpoint')  }/${  endpoint.replace('//', '/') }`;
     endpoint = `${ location.origin }${ endpoint }`;
 
-    return new HW.ECS({
+    return new HW.ECS(Object.assign({}, {
       ak:           get(this, 'config.accessKey'),
       sk:           get(this, 'config.secretKey'),
       projectId:    get(this, 'config.projectId'),
       endpoint,
       region,
       toSignedHost: `${ prefix }.${ region }.myhuaweicloud.com`,
-    })
+    }, extralParams))
   },
 });

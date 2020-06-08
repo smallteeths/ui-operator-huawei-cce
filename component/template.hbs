@@ -38,7 +38,7 @@
             <p class="text-info text-small m-0">{{t "clusterNew.huaweicce.projectId.help" htmlSafe=true}}</p>
           </div>
         </div>
-        {{#unless authConfigred}}
+        {{#unless authConfigured}}
           <div class="row">
             <div class="col span-6 mb-0">
               <label class="acc-label">
@@ -635,7 +635,7 @@
     {{save-cancel
             createLabel="clusterNew.huaweicce.configureNode"
             savingLabel="clusterNew.huaweicce.configuringNode"
-            save=(action "configreNode")
+            save=(action "configureNode")
             cancel=close
     }}
   {{/if}}
