@@ -96,6 +96,21 @@ const MANAGEMENT_SCALE_VIRTUAL = [
     value: 'large',
   }]
 
+const CONTAINER_NETWORK_MODES = [
+  {
+    label: 'clusterNew.huaweicce.containerNetworkMode.overlay.label',
+    value: 'overlay_l2',
+    bare: false,
+  }, {
+    label: 'clusterNew.huaweicce.containerNetworkMode.underlayIpvlan.label',
+    value: 'underlay_ipvlan',
+    bare: true,
+  }, {
+    label: 'clusterNew.huaweicce.containerNetworkMode.vpcRouter.label',
+    value: 'vpc-router',
+    bare: false
+  }]
+
 
 /*!!!!!!!!!!!DO NOT CHANGE START!!!!!!!!!!!*/
 export default Ember.Component.extend(ClusterDriver, {
@@ -134,17 +149,6 @@ export default Ember.Component.extend(ClusterDriver, {
       label: 'Traffic',
       value: 'traffic',
     }],
-  containerNetworkMode: [
-    {
-      label: 'overlay_l2',
-      value: 'overlay_l2',
-    }, {
-      label: 'underlay_ipvlan',
-      value: 'underlay_ipvlan',
-    }, {
-      label: 'vpc-router',
-      value: 'vpc-router',
-    }],
   volumeTypeContent: [
     {
       label: 'SATA',
@@ -163,17 +167,6 @@ export default Ember.Component.extend(ClusterDriver, {
     }, {
       label: '5_sbgp',
       value: '5_sbgp',
-    }],
-  containerNetworkModeContent: [
-    {
-      label: 'clusterNew.huaweicce.containerNetworkMode.overlay.label',
-      value: 'overlay_l2',
-    }, {
-      label: 'clusterNew.huaweicce.containerNetworkMode.underlayIpvlan.label',
-      value: 'underlay_ipvlan',
-    }, {
-      label: 'clusterNew.huaweicce.containerNetworkMode.vpcRouter.label',
-      value: 'vpc-router',
     }],
   nodeOperationSystemContent: [
     {
@@ -655,6 +648,17 @@ export default Ember.Component.extend(ClusterDriver, {
     }
   }),
 
+  containerNetworkModeContentChange: observer('containerNetworkModeContent.[]', function() {
+    set(this, 'config.containerNetworkMode', get(this, 'containerNetworkModeContent.firstObject.value'))
+  }),
+
+  containerNetworkModeContent: computed('config.clusterType', function() {
+    const choices     = CONTAINER_NETWORK_MODES;
+    const clusterType = get(this, 'config.clusterType');
+
+    return choices.filter((choice) => choice.bare === (clusterType === 'BareMetal'))
+  }),
+
   regionShowValue: computed('config.region', 'intl.locale', function() {
     const intl    = get(this, 'intl');
     const choices = get(this, 'zones');
@@ -671,7 +675,7 @@ export default Ember.Component.extend(ClusterDriver, {
     return intl.t(get(choices.findBy('value', current), 'label'));
   }),
 
-  containerNetworkModeShowValue: computed('config.containerNetworkMode', 'intl.locale', function() {
+  containerNetworkModeShowValue: computed('containerNetworkModeContent.[]', 'config.containerNetworkMode', 'intl.locale', function() {
     const intl    = get(this, 'intl');
     const choices = get(this, 'containerNetworkModeContent');
     const current = get(this, 'config.containerNetworkMode');
