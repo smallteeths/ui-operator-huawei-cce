@@ -16,6 +16,10 @@ steps:
   volumes:
   - name: cache
     path: /var/local/drone-cache:/cache
+  when:
+    event:
+      - push
+      - tag
 
 - name: build
   image: node
@@ -35,6 +39,10 @@ steps:
   volumes:
   - name: cache
     path: /var/local/drone-cache:/cache
+  when:
+    event:
+      - push
+      - tag
 
 - name: update-test-to-oss
   image: trylife/aliyun-ossutil:latest
@@ -44,8 +52,8 @@ steps:
     OSS_KEY_SECRET:
       from_secret: OSS_KEY_SECRET
   commands:
-    - ossutil config  -L CH -e "oss-cn-beijing.aliyuncs.com" -i $OSS_KEY_ID -k $OSS_KEY_SECRET
-    - ossutil cp -rf ./dist oss://sy-ui/yuzeng/huawei-cce/test
+  - ossutil config  -L CH -e "oss-cn-beijing.aliyuncs.com" -i $OSS_KEY_ID -k $OSS_KEY_SECRET
+  - ossutil cp -rf ./dist oss://sy-ui/yuzeng/huawei-cce/test
   when:
     event:
     - push
@@ -58,8 +66,8 @@ steps:
     OSS_KEY_SECRET:
       from_secret: OSS_KEY_SECRET
   commands:
-    - ossutil config  -L CH -e "oss-cn-beijing.aliyuncs.com" -i $OSS_KEY_ID -k $OSS_KEY_SECRET
-    - ossutil cp -rf ./dist oss://sy-ui/yuzeng/huawei-cce/${DRONE_TAG}
+  - ossutil config  -L CH -e "oss-cn-beijing.aliyuncs.com" -i $OSS_KEY_ID -k $OSS_KEY_SECRET
+  - ossutil cp -rf ./dist oss://sy-ui/yuzeng/huawei-cce/${DRONE_TAG}
   when:
     event:
     - tag
