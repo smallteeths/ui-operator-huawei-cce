@@ -762,7 +762,25 @@ export default Ember.Component.extend(ClusterDriver, {
   nodeFlavorContent: computed('nodeFlavors.[]', function() {
     const nodeFlavors = get(this, 'nodeFlavors') || []
 
-    return nodeFlavors.map((n) => {
+    return nodeFlavors.filter((n) => {
+      const az   = get(this, 'config.availableZone');
+      let statusString = get(n, 'os_extra_specs.cond:operation:az')
+      let statusSubString = '';
+
+      if (statusString === undefined) {
+        return true
+      }
+
+      statusSubString = statusString.split(',').find(item => item.indexOf(az) !== -1)
+
+      if (statusSubString === undefined) {
+        return true
+      }
+
+      statusSubString = statusSubString.match(/\([a-z]+\)/)
+
+      return !(statusSubString === '(abandon)' || statusSubString === '(sellout)');
+    }).map((n) => {
       return {
         label: `${ n.name } ( vCPUs: ${ n.vcpus }, memory: ${ n.ram / 1024 } GB )`,
         value: n.name
