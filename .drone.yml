@@ -8,19 +8,6 @@ platform:
   arch: amd64
 
 steps:
-- name: restore-cache
-  image: drillster/drone-volume-cache
-  restore: true
-  mount:
-    - ./node_modules
-  volumes:
-  - name: cache
-    path: /var/local/drone-cache:/cache
-  when:
-    event:
-      - push
-      - tag
-
 - name: build
   image: node
   commands:
@@ -31,20 +18,7 @@ steps:
     - push
     - tag
 
-- name: rebuild-cache
-  image: drillster/drone-volume-cache
-  rebuild: true
-  mount:
-    - ./node_modules
-  volumes:
-  - name: cache
-    path: /var/local/drone-cache:/cache
-  when:
-    event:
-      - push
-      - tag
-
-- name: update-test-to-oss
+- name: upload-test-to-oss
   image: trylife/aliyun-ossutil:latest
   environment:
     OSS_KEY_ID:
@@ -67,7 +41,7 @@ steps:
       from_secret: OSS_KEY_SECRET
   commands:
   - ossutil config  -L CH -e "oss-cn-beijing.aliyuncs.com" -i $OSS_KEY_ID -k $OSS_KEY_SECRET
-  - ossutil cp -rf ./dist oss://sy-ui/yuzeng/huawei-cce/${DRONE_TAG}
+  - ossutil cp -rf ./dist oss://rancher2-drivers/pandaria/ui/cluster-driver-huawei/${DRONE_TAG}
   when:
     event:
     - tag
