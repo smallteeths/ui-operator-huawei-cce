@@ -351,13 +351,11 @@ export default Ember.Component.extend(ClusterDriver, {
 
     async checkAccount(cb) {
       const requiredConfig = ['projectId', 'accessKey', 'secretKey', 'region']
-      const requiredCluster = ['name']
 
       set(this, 'errors', [])
       let errors = [];
 
       errors = this.validateFields(errors, requiredConfig, 'config')
-      errors = this.validateFields(errors, requiredCluster, 'cluster')
       if (errors.length > 0) {
         set(this, 'errors', errors);
         cb();
@@ -456,8 +454,10 @@ export default Ember.Component.extend(ClusterDriver, {
 
       const errors = get(this, 'errors') || [];
       const intl = get(this, 'intl');
+      const requiredCluster = ['name']
+      const nameErrors = this.validateFields(errors, requiredCluster, 'cluster')
 
-      if (errors.length > 0) {
+      if (errors.length > 0 || nameErrors.length > 0) {
         set(this, 'errors', errors);
         cb();
 
