@@ -375,6 +375,7 @@ export default Ember.Component.extend(ClusterDriver, {
         await this.getVpcs();
         await this.getSubnet();
         await this.getNetwork();
+        await this.getEipIds();
         // await this.getVersions();
 
         set(this, 'step', 2);
@@ -987,6 +988,20 @@ export default Ember.Component.extend(ClusterDriver, {
         }
         set(this, 'publicCloud', true)
         set(this, 'networks', response.body.networks)
+
+        resolve()
+      })
+    })
+  },
+
+  getEipIds() {
+    return new EmberPromise((resolve, reject) => {
+      this.getClient('ecs').getPublicips((err, response) => {
+        if (err) {
+          return reject(err)
+        }
+
+        set(this, 'eipids', response.body.publicips);
 
         resolve()
       })
