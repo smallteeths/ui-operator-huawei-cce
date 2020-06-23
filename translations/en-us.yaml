@@ -159,4 +159,7 @@ clusterNew:
       authenticating_proxy: Authenticating Proxy
     eipShareType:
       label: EIP Share Type
+    generic:
+      mbitS: Mbit/s
+      isRequired: is required
 

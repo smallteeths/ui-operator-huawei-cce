@@ -159,3 +159,6 @@ clusterNew:
       authenticating_proxy: 认证代理
     eipShareType:
       label: 共享Eip类型
+    generic:
+      mbitS: Mbit/s
+      isRequired: 必须填写
