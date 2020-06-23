@@ -746,6 +746,7 @@ export default Ember.Component.extend(ClusterDriver, {
   eipIdContent: computed('eipIds.[]', function() {
     const eipIds = get(this, 'eipIds') || []
 
+
     return eipIds.filter((e) => e.status === 'DOWN').map((e) => ({
       label: e.public_ip_address,
       value: e.id
@@ -1001,7 +1002,7 @@ export default Ember.Component.extend(ClusterDriver, {
           return reject(err)
         }
 
-        set(this, 'eipids', response.body.publicips);
+        set(this, 'eipIds', response.body.publicips);
 
         resolve()
       })
