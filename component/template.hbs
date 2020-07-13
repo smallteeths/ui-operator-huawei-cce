@@ -291,7 +291,7 @@
           </div>
           {{#if config.externalServerEnabled}}
             <div class="col span-6">
-              <label class="acc-label">{{t "clusterNew.huaweicce.clusterEipId.label"}}</label>
+              <label class="acc-label">{{t "clusterNew.huaweicce.clusterEipId.label"}}{{field-required}}</label>
               {{#input-or-display
                       editable=(and (eq step 2) (not editing))
                       value=clusterEipName
@@ -306,6 +306,29 @@
             </div>
           {{/if}}
         </div>
+        {{#if config.externalServerEnabled}}
+          <div class="row">
+            <div class="col span-6 offset-6">
+              <label class="acc-label">
+              {{t "clusterNew.huaweicce.vipSubnetId.label"}}{{field-required}}
+            </label>
+            {{#if (or editing (not (eq step 2)))}}
+              <div>
+                {{editedVipSubnetName}}
+              </div>
+            {{else}}
+              {{#if (gt vipSubnetContent.length 0)}}
+                {{new-select classNames="form-control"
+                             content=vipSubnetContent
+                             value=config.vipSubnetId
+                }}
+              {{else}}
+                <div>{{t "clusterNew.huaweicce.subnetId.none"}}</div>
+              {{/if}}
+            {{/if}}
+            </div>
+          </div>
+        {{/if}}
         <div class="row">
           <div class="col span-12 mb-0">
             <label class="acc-label">{{t "clusterNew.huaweicce.clusterLabels.label"}}</label>
@@ -557,11 +580,23 @@
                   <label class="acc-label">
                     {{t "clusterNew.huaweicce.eipIds.label"}}
                   </label>
-                  <select class="form-control existing-eips" multiple="true" onchange={{action "multiEipSelect"}}>
-                    {{#each eipIdContent as |choice|}}
-                      <option value={{choice.value}} selected={{array-includes config.eipIds choice.value}}>{{choice.label}}</option>
-                    {{/each}}
-                  </select>
+                  <div class="row" style="max-height: 200px;overflow: auto;">
+                  {{#each eipIdContent as |choice|}}
+                    <div class="col span-4" style="margin-right:.5%;">
+                      <div class="input-group mb-10 border">
+                        <label class="input-group-addon bg-default p-10 vertical-middle">
+                          {{input
+                            type="checkbox"
+                            checked=choice.active
+                          }}
+                        </label>
+                        <div class="form-control p-10 vertical-middle">
+                          {{choice.label}}
+                        </div>
+                      </div>
+                    </div>
+                  {{/each}}
+                  </div>
                 {{/if}}
               </div>
             </div>

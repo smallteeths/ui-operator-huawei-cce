@@ -128,6 +128,10 @@ clusterNew:
     clusterEipId:
       label: Cluster Eip
       prompt: Choose a Eip...
+      required: Cluster Eip is required
+    vipSubnetId:
+      label: ELB subnet
+      prompt: Choose a subnet...
     externalServerEnabled:
       label: External Server
       enabled: Enabled - Only support in intranet

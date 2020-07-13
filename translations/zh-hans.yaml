@@ -126,8 +126,12 @@ clusterNew:
     nodeLabels:
       label: 主机标签
     clusterEipId:
-      label: Cluster Eip
-      prompt: 选择Eip...
+      label: 弹性公网IP
+      prompt: 请选择...
+      required: 必须选择弹性公网IP
+    vipSubnetId:
+      label: ELB所在子网
+      prompt: 请选择...
     externalServerEnabled:
       label: 外部服务器
       enabled: 启用 - 只支持内网
