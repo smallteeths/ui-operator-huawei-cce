@@ -118,6 +118,7 @@ clusterNew:
     eipIds:
       label: Eip
       none: No available Eip
+      countError: The count of selected or created must be equal to the count of nodes
     eipType:
       label: Eip Type
     clusterLabels:

@@ -118,6 +118,7 @@ clusterNew:
     eipIds:
       label: 弹性 IP
       none: 无可用弹性 IP
+      countError: 已选或新建的弹性 IP数量必须和节点数保持一致
     eipType:
       label: Eip 类型
     clusterLabels:
