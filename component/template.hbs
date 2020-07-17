@@ -291,24 +291,6 @@
           </div>
           {{#if config.externalServerEnabled}}
             <div class="col span-6">
-              <label class="acc-label">{{t "clusterNew.huaweicce.clusterEipId.label"}}{{field-required}}</label>
-              {{#input-or-display
-                      editable=(and (eq step 2) (not editing))
-                      value=clusterEipName
-              }}
-                {{new-select
-                        classNames="form-control"
-                        prompt=(t "clusterNew.huaweicce.clusterEipId.prompt")
-                        value=config.clusterEipId
-                        content=clusterEipIdContent
-                }}
-              {{/input-or-display}}
-            </div>
-          {{/if}}
-        </div>
-        {{#if config.externalServerEnabled}}
-          <div class="row">
-            <div class="col span-6 offset-6">
               <label class="acc-label">
               {{t "clusterNew.huaweicce.vipSubnetId.label"}}{{field-required}}
             </label>
@@ -327,8 +309,8 @@
               {{/if}}
             {{/if}}
             </div>
-          </div>
-        {{/if}}
+          {{/if}}
+        </div>
         <div class="row">
           <div class="col span-12 mb-0">
             <label class="acc-label">{{t "clusterNew.huaweicce.clusterLabels.label"}}</label>

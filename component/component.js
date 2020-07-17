@@ -390,10 +390,6 @@ export default Ember.Component.extend(ClusterDriver, {
 
       errors = this.validateFields(errors, requiredConfig, 'config')
 
-      if (get(this, 'config.externalServerEnabled') && !get(this, 'config.clusterEipId')) {
-        errors.pushObject(intl.t('clusterNew.huaweicce.clusterEipId.required'))
-      }
-
       if (errors.length > 0) {
         set(this, 'errors', errors);
         cb();
@@ -592,14 +588,6 @@ export default Ember.Component.extend(ClusterDriver, {
     }
   }),
 
-  externalServerChange: observer('config.externalServerEnabled', function() {
-    const externalServerEnabled = get(this, 'config.externalServerEnabled')
-
-    if ( !externalServerEnabled ) {
-      set(this, 'config.clusterEipId', null)
-    }
-  }),
-
   clusterFlavorObserver: observer('managementScale', 'highAvailabilityEnabled', function() {
     const { managementScale, highAvailabilityEnabled } = this;
 
@@ -776,37 +764,13 @@ export default Ember.Component.extend(ClusterDriver, {
     return filter.name
   }),
 
-  clusterEipIdContent: computed('eipIds.[]', function() {
+  eipIdContent: computed('eipIds.[]', 'config.{externalServerEnabled}', function() {
     const eipIds = get(this, 'eipIds') || [];
-
+    
     return eipIds.filter((e) => e.status === 'DOWN').map((e) => ({
       label: e.public_ip_address,
       value: e.id
     }))
-  }),
-
-  eipIdContent: computed('eipIds.[]', 'config.{clusterEipId, externalServerEnabled}', function() {
-    const eipIds = get(this, 'eipIds') || [];
-    const clusterEipIdsStatus = get(this, 'config.externalServerEnabled') && get(this, 'config.clusterEipId')
-    
-    return eipIds.filter((e) => {
-      if (clusterEipIdsStatus) {
-        return e.id !== get(this, 'config.clusterEipId') && e.status === 'DOWN'
-      }
-
-      return e.status === 'DOWN';
-    }).map((e) => ({
-      label: e.public_ip_address,
-      value: e.id
-    }))
-  }),
-
-  clusterEipName: computed('config.clusterEipId', function() {
-    const eipIds = get(this, 'eipIds') || []
-    const clusterEipId = get(this, 'config.clusterEipId')
-    const filter = eipIds.filter((e) => e.id === clusterEipId)[0] || {}
-
-    return filter.public_ip_address
   }),
 
   nodeFlavorContent: computed('nodeFlavors.[]', function() {
