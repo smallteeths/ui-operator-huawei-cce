@@ -1030,7 +1030,7 @@ export default Ember.Component.extend(ClusterDriver, {
 
   getEipIds() {
     return new EmberPromise((resolve, reject) => {
-      this.getClient('ecs').getPublicips((err, response) => {
+      this.getClient('vpc').getPublicips((err, response) => {
         if (err) {
           return reject(err)
         }
