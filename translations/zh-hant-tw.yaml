@@ -1,0 +1,169 @@
+clusterNew:
+  huaweicce:
+    label: 華為雲容器引擎
+    shortLabel: Huawei CCE
+    name:
+      label: 集群名稱
+      required: 集群名稱必須填寫
+    access:
+      title: 帳戶訪問
+      detail: 選擇用於啟動華為雲容器引擎的區域和API KEY。
+    accessKey:
+      label: 訪問密鑰ID
+      placeholder: CCE訪問密鑰ID
+      help: 創建訪問密鑰ID參考<a href="https://support.huaweicloud.com/usermanual-ca/zh-cn_topic_0046606340.html" target="_blank">這裡</a>。
+    secretKey:
+      label: 訪問密鑰
+      placeholder: CCE訪問密鑰
+      help: 獲取訪問密鑰參考<a href="https://support.huaweicloud.com/usermanual-ca/zh-cn_topic_0046606340.html" target="_blank">這裡</a>。
+    projectId:
+      label: 項目ID
+      placeholder: CCE項目ID
+      help: 獲取項目ID參考<a href="https://support.huaweicloud.com/usermanual-ca/zh-cn_topic_0046606344.html" target="_blank">這裡</a>。
+      required: 項目ID必須填寫
+    region:
+      label: 區域
+      helpText: 獲取區域參考<a href="https://developer.huaweicloud.com/endpoint" target="_blank">這裡</a>。
+      required: 區域必須填寫
+      cn_north_1: 華北-北京一
+      cn_north_4: 華北-北京四
+      cn_east_3: 華東-上海一
+      cn_east_2: 華東-上海二
+      cn_south_1: 華南-廣州
+      cn_southwest_2: 西南-貴陽一
+      ap_southeast_1: 亞太-香港
+      ap_southeast_2: 亞太-曼谷
+      ap_southeast_3: 亞太-新加坡
+      af_south_1: 非洲-約翰內斯堡
+      sa_brazil_1: 拉美-聖保羅一
+      la_south_2: 拉美-聖地亞哥
+    business:
+      label: 業務
+    checkAccount: '下一步: 配置集群'
+    checkingAccount: 用戶校驗中...
+    configureNode: '下一步: 配置節點'
+    configuringNode: 配置中...
+    clusterOption:
+      title: 集群選項
+      detail: 為集群自定義Kubernetes選項
+    clusterType:
+      label: 集群類型
+      VirtualMachine:
+        label: 混合集群
+      BareMetal:
+        label: 裸金屬集群
+    clusterFlavor:
+      label: Cluster Flavor
+    masterVersion:
+      label: 版本
+    vpcId:
+      label: 虛擬私有雲
+    subnetId:
+      label: 所在子網
+      none: 無可用子網
+    highwaySubnet:
+      label: 高速網卡
+      placeholder: 高速子網
+      none: 沒有高速子網被使用
+    nodeOption:
+      title: 節點選項
+      detail: 為節點自定義選項
+    dataVolumeType:
+      label: 數據盤類型
+    dataVolumeSize:
+      label: 數據盤大小
+    description:
+      label: 描述
+      placeholder: '例如: 華為CCE集群'
+    eipBandwidthSize:
+      label: 帶寬
+    eipChargeMode:
+      label: 計費模式
+    eipCount:
+      label: 數量
+    availableZone:
+      label: 當前區域
+    billingMode:
+      label: 計費模式
+      payPerUse: 按需計費
+      yearly: '包年/包月'
+    containerNetworkCidr:
+      label: 容器網段
+      placeholder: '例如: 172.16.0.0/16'
+    containerNetworkMode:
+      label: 網路模型
+      none: 無配置
+      overlay:
+        label: 容器隧道網路
+      underlayIpvlan:
+        label: 'Underlay l2網路'
+      vpcRouter:
+        label: VPC網路
+    rootVolumeType:
+      label: 系統盤類型
+    rootVolumeSize:
+      label: 系統盤大小
+    nodeCount:
+      label: 節點個數
+    nodeFlavor:
+      label: 節點規格
+    ssh:
+      label: 密鑰對
+    eip:
+      label: 彈性IP
+    eipSelection:
+      none: 暫不使用
+      new: 創建新的
+      exist: 使用已有
+    eipIds:
+      label: 彈性 IP
+      none: 無可用彈性 IP
+      countError: 已選或新建的彈性 IP數量必須和節點數保持一致
+    eipType:
+      label: Eip 類型
+    clusterLabels:
+      label: 集群標籤
+      none: 無標籤
+    nodeLabels:
+      label: 主機標籤
+    clusterEipId:
+      label: 彈性公網IP
+      prompt: 請選擇...
+      required: 必須選擇彈性公網IP
+    vipSubnetId:
+      label: ELB所在子網
+      prompt: 請選擇...
+    externalServerEnabled:
+      label: 外部伺服器
+      enabled: 啟用 - 只支持內網
+      disabled: 禁用 - CCE集群將部署在Rancher所在的VPC
+    highAvailability:
+      label: 高可用
+    managementScale:
+      label: 集群管理規模
+    nodeOperationSystem:
+      label: 操作系統
+    authenticatingProxyCa:
+      label: CA根證書
+    validityPeriod:
+      label: 有效期
+    bmsIsAutoRenew:
+      label: 自動更新
+    loginMode:
+      label: 登錄方式
+      password: 密碼
+      keyPair: 密鑰對
+    password:
+      label: 密碼
+      placeholder: 請輸入密碼
+    userName:
+      label: 用戶名
+    authentiactionMode:
+      label: 認證模式
+      rbac: RBAC
+      authenticating_proxy: 認證代理
+    eipShareType:
+      label: 共享Eip類型
+    generic:
+      mbitS: Mbit/s
+      isRequired: 必須填寫
