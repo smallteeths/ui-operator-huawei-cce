@@ -120,9 +120,9 @@ export default Ember.Component.extend(ClusterDriver, {
   session:     service(),
   intl:        service(),
 
-  layout:            null,
-  configField:       'huaweiEngineConfig',
-
+  layout:       null,
+  configField: 'huaweiEngineConfig',
+  volumeTypes: [],
   zones:       ZONES,
   clusterType: [
     {
@@ -131,6 +131,11 @@ export default Ember.Component.extend(ClusterDriver, {
     }
   ],
   masterVersions: [
+    {
+      label: 'v1.23',
+      value: 'v1.23',
+      rancherEnabeld: true,
+    },
     {
       label: 'v1.21',
       value: 'v1.21',
@@ -141,11 +146,6 @@ export default Ember.Component.extend(ClusterDriver, {
       value: 'v1.19',
       rancherEnabeld: true,
     },
-    {
-      label: 'v1.23',
-      value: 'v1.23',
-      rancherEnabeld: true,
-    },
   ],
   eipChargeModeContent: [
     {
@@ -154,20 +154,6 @@ export default Ember.Component.extend(ClusterDriver, {
     }, {
       label: 'Traffic',
       value: 'traffic',
-    }],
-  volumeTypeContent: [
-    {
-      label: 'clusterNew.huaweicce.volumetype.SSD',
-      value: 'SSD',
-    }, {
-      label: 'clusterNew.huaweicce.volumetype.SAS',
-      value: 'SAS',
-    }, {
-      label: 'clusterNew.huaweicce.volumetype.SATA',
-      value: 'SATA',
-    }, {
-      label: 'clusterNew.huaweicce.volumetype.GPSSD',
-      value: 'GPSSD',
     }],
   eipTypeContent: [
     {
@@ -290,8 +276,8 @@ export default Ember.Component.extend(ClusterDriver, {
         billingMode:           0,
         containerNetworkMode:  'overlay_l2',
         clusterFlavor:         'cce.s2.small',
-        dataVolumeType:        'SAS',
-        rootVolumeType:        'SAS',
+        dataVolumeType:        null,
+        rootVolumeType:        null,
         nodeCount:             1,
         rootVolumeSize:        40,
         externalServerEnabled: false,
@@ -368,12 +354,11 @@ export default Ember.Component.extend(ClusterDriver, {
         'config.secretKey': (get(this, 'config.secretKey') || '').trim(),
       });
 
-      this.regionChange();
-
       try {
         await this.getVpcs();
         await this.getEipIds();
         await this.getVipSubnet();
+        await this.getVolumeTypes();
 
         set(this, 'step', 2);
         cb();
@@ -826,6 +811,28 @@ export default Ember.Component.extend(ClusterDriver, {
     })
   }),
 
+  volumeTypeContent: computed('volumeTypes.[]', 'config.availableZone', function() {
+    const out = [];
+    const volumeTypes = get(this, 'volumeTypes') || [];
+    const zone = get(this, 'config.availableZone') || '';
+
+    volumeTypes.forEach(obj=>{
+      if(obj.availabilityZones.includes(zone)){
+        out.push({
+          label: `clusterNew.huaweicce.volumetype.${obj.name}`,
+          value: obj.name,
+        })
+      }
+    });
+
+    if (get(this, 'mode') === 'new') {
+      set(this, 'config.rootVolumeType', out[0] && out[0].value || null)
+      set(this, 'config.dataVolumeType', out[0] && out[0].value || null)
+    }
+
+    return out;
+  }),
+
   editedSshName: computed('config.sshKey', function() {
     const sshKey = get(this, 'config.sshKey')
     const keypairs = get(this, 'keypairs') || [];
@@ -994,6 +1001,42 @@ export default Ember.Component.extend(ClusterDriver, {
       set(this, 'eipIds', res);
 
       return res
+    })
+  },
+
+  getVolumeTypes() {
+    const types = ['SSD', 'SAS', 'SATA'];
+    return this.fetchResoures('volumeTypes').then(res => {
+      const out = [];
+
+
+      res.forEach(obj=>{
+        let availabilityZones = [];
+        const availability = get(obj, 'extra_specs.RESKEY:availability_zones');
+
+        if(!availability || !types.includes(obj.name)){
+          return;
+        }
+
+        const availabilityArr = availability.split(',');
+        const soldOut = get(obj, 'extra_specs.os-vendor-extended:sold_out_availability_zones');
+
+        if(!soldOut){
+          availabilityZones = availabilityArr;
+        } else {
+          const soldOutArr = get(obj, 'extra_specs.os-vendor-extended:sold_out_availability_zones').split(',');
+          availabilityZones = availabilityArr.filter(item => !soldOutArr.includes(item));
+        }
+
+        availabilityZones && availabilityZones.length && out.push({
+          availabilityZones,
+          name: obj.name
+        });
+      })
+
+      set(this, 'volumeTypes', out);
+
+      return out;
     })
   },
 
