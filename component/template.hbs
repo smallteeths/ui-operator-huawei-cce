@@ -526,14 +526,14 @@
                     {{t "clusterNew.huaweicce.eipSelection.new"}}
                   </label>
                 </div>
-                <div class="radio">
+                {{!-- <div class="radio">
                   <label class={{unless (gt eipIdContent.length 0) "text-muted"}}>
                     {{radio-button selection=eipSelection value="exist" disabled=(not (gt eipIdContent.length 0))}}
                     {{t "clusterNew.huaweicce.eipSelection.exist"}}
                     {{#unless (gt eipIdContent.length 0)}} &mdash; {{t "clusterNew.huaweicce.eipIds.none"}}
                     {{/unless}}
                   </label>
-                </div>
+                </div> --}}
               </div>
               <div class="col span-6">
                 {{#if (eq eipSelection "new")}}
@@ -566,7 +566,7 @@
                     <span class="input-group-addon bg-default">{{t "clusterNew.huaweicce.generic.mbitS"}}</span>
                   </div>
                 {{/if}}
-                {{#if (eq eipSelection "exist")}}
+                {{!-- {{#if (eq eipSelection "exist")}}
                   <label class="acc-label">
                     {{t "clusterNew.huaweicce.eipIds.label"}}
                   </label>
@@ -587,7 +587,7 @@
                     </div>
                   {{/each}}
                   </div>
-                {{/if}}
+                {{/if}} --}}
               </div>
             </div>
             <div class="row">
