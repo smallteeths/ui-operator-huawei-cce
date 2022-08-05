@@ -3,8 +3,9 @@ clusterNew:
     label: 華為雲容器引擎
     shortLabel: Huawei CCE
     name:
-      label: 集群名稱
-      required: 集群名稱必須填寫
+      label: 集羣名稱
+      required: 集羣名稱必須填寫
+      minLengthError: 集羣名稱不能小於4字節
     access:
       title: 帳戶訪問
       detail: 選擇用於啟動華為雲容器引擎的區域和API KEY。
@@ -39,19 +40,21 @@ clusterNew:
       la_south_2: 拉美-聖地亞哥
     business:
       label: 業務
-    checkAccount: '下一步: 配置集群'
+    checkAccount: '下一步: 配置集羣'
     checkingAccount: 用戶校驗中...
     configureNode: '下一步: 配置節點'
     configuringNode: 配置中...
     clusterOption:
-      title: 集群選項
-      detail: 為集群自定義Kubernetes選項
+      title: 集羣選項
+      detail: 為集羣自定義Kubernetes選項
     clusterType:
-      label: 集群類型
+      label: 集羣類型
       VirtualMachine:
-        label: 混合集群
+        label: 混合集羣
       BareMetal:
         label: 裸金屬集群
+      ARM64:
+        label: 鯤鵬集羣
     clusterFlavor:
       label: Cluster Flavor
     masterVersion:
@@ -75,9 +78,15 @@ clusterNew:
       label: 數據盤類型
     dataVolumeSize:
       label: 數據盤大小
+      placeholder: "容量範圍: 100 ~ 32768"
+    volumetype:
+      SAS: 高IO
+      SSD: 超高IO
+      SATA: 普通IO
+      GPSSD: 通用SSD
     description:
       label: 描述
-      placeholder: '例如: 華為CCE集群'
+      placeholder: '例如: 華為CCE集羣'
     eipBandwidthSize:
       label: 帶寬
     eipChargeMode:
@@ -93,6 +102,8 @@ clusterNew:
     containerNetworkCidr:
       label: 容器網段
       placeholder: '例如: 172.16.0.0/16'
+      none: 無配置
+      cidrFormatError: '"容器網段" 格式错误'
     containerNetworkMode:
       label: 網絡模型
       none: 無配置
@@ -106,6 +117,7 @@ clusterNew:
       label: 系統盤類型
     rootVolumeSize:
       label: 系統盤大小
+      placeholder: "容量範圍: 40 ~ 1024"
     nodeCount:
       label: 節點個數
     nodeFlavor:
@@ -125,7 +137,7 @@ clusterNew:
     eipType:
       label: Eip 類型
     clusterLabels:
-      label: 集群標籤
+      label: 集羣標籤
       none: 無標籤
     nodeLabels:
       label: 主機標籤
@@ -139,11 +151,11 @@ clusterNew:
     externalServerEnabled:
       label: 外部服務器
       enabled: 啟用 - 只支持內網
-      disabled: 禁用 - CCE集群將部署在Rancher所在的VPC
+      disabled: 禁用 - CCE集羣將部署在Rancher所在的VPC
     highAvailability:
       label: 高可用
     managementScale:
-      label: 集群管理規模
+      label: 集羣管理規模
     nodeOperationSystem:
       label: 操作系統
     authenticatingProxyCa:

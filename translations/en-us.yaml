@@ -5,6 +5,7 @@ clusterNew:
     name:
       label: Cluster Name
       required: Cluster name is required.
+      minLengthError: Cluster name cannot be less than 4 bytes
     access:
       title: Account Access
       detail: Choose the region and API Key that will be used to launch Huawei Cloud Container Engine.
@@ -52,6 +53,8 @@ clusterNew:
         label: VirtualMachine
       BareMetal:
         label: BareMetal
+      ARM64:
+        label: ARM64
     clusterFlavor:
       label: Cluster Flavor
     masterVersion:
@@ -75,6 +78,12 @@ clusterNew:
       label: Data Volume Type
     dataVolumeSize:
       label: Data Volume Size
+      placeholder: "Disk Capacity: 100 to 32768"
+    volumetype:
+      SAS: SAS
+      SSD: SSD
+      SATA: SATA
+      GPSSD: GPSSD
     description:
       label: Description
       placeholder: e.g. Cluster for Huawei CCE
@@ -93,6 +102,8 @@ clusterNew:
     containerNetworkCidr:
       label: Container Network Cidr
       placeholder: e.g. 172.16.0.0/16
+      none: No config
+      cidrFormatError: '"Container Network Cidr" format error'
     containerNetworkMode:
       label: Container Network Mode
       none: No config
@@ -106,6 +117,7 @@ clusterNew:
       label: Root Volume Type
     rootVolumeSize:
       label: Root Volume Size
+      placeholder: "Disk Capacity: 40 to 1024"
     nodeCount:
       label: Node Count
     nodeFlavor:

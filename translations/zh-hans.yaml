@@ -5,6 +5,7 @@ clusterNew:
     name:
       label: 集群名称
       required: 集群名称必须填写
+      minLengthError: 集群名称不能小于4字节
     access:
       title: 帐户访问
       detail: 选择用于启动华为云容器引擎的区域和API KEY。
@@ -52,6 +53,8 @@ clusterNew:
         label: 混合集群
       BareMetal:
         label: 裸金属集群
+      ARM64:
+        label: 鲲鹏集群
     clusterFlavor:
       label: Cluster Flavor
     masterVersion:
@@ -75,6 +78,12 @@ clusterNew:
       label: 数据盘类型
     dataVolumeSize:
       label: 数据盘大小
+      placeholder: "容量范围: 100 ~ 32768"
+    volumetype:
+      SAS: 高IO
+      SSD: 超高IO
+      SATA: 普通IO
+      GPSSD: 通用SSD
     description:
       label: 描述
       placeholder: '例如: 华为CCE集群'
@@ -93,6 +102,8 @@ clusterNew:
     containerNetworkCidr:
       label: 容器网段
       placeholder: '例如: 172.16.0.0/16'
+      none: 无配置
+      cidrFormatError: '"容器网段" 格式错误'
     containerNetworkMode:
       label: 网络模型
       none: 无配置
@@ -106,6 +117,7 @@ clusterNew:
       label: 系统盘类型
     rootVolumeSize:
       label: 系统盘大小
+      placeholder: "容量范围: 40 ~ 1024"
     nodeCount:
       label: 节点个数
     nodeFlavor:

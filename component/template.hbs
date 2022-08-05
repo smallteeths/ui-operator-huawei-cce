@@ -216,10 +216,10 @@
                 {{/if}}
               </div>
             {{else}}
-              {{searchable-select class="form-control"
-                                  content=containerNetworkCidrContent
-                                  value=config.containerNetworkCidr
-                                  allowCustom=true
+              {{input type="text"
+                value=config.containerNetworkCidr
+                classNames="form-control"
+                placeholder=(t "clusterNew.huaweicce.containerNetworkCidr.placeholder")
               }}
             {{/if}}
           </div>
@@ -257,25 +257,6 @@
               {{/if}}
             {{/if}}
           </div>
-          {{#if (eq config.clusterType "BareMetal")}}
-            <div class="col span-6 mb-0">
-              <label class="acc-label">{{t "clusterNew.huaweicce.highwaySubnet.label"}}</label>
-              {{#if (gt networkContent.length 0)}}
-                {{#if (or editing (not (eq step 2)))}}
-                  <div>
-                    {{highwaySubnetShowValue}}
-                  </div>
-                {{else}}
-                  {{new-select classNames="form-control"
-                               content=networkContent
-                               value=config.highwaySubnet
-                  }}
-                {{/if}}
-              {{else}}
-                <div style="margin-top: 10px;">{{t "clusterNew.huaweicce.highwaySubnet.none"}}</div>
-              {{/if}}
-            </div>
-          {{/if}}
         </div>
         <div class="row">
           <div class="col span-6 mb-0">
@@ -427,8 +408,9 @@
                 <div>{{config.dataVolumeType}}</div>
               {{else}}
                 {{new-select classNames="form-control"
-                             value=config.dataVolumeType
-                             content=volumeTypeContent
+                  value=config.dataVolumeType
+                  content=volumeTypeContent
+                  localizedLabel=true
                 }}
               {{/if}}
             </div>
@@ -440,7 +422,12 @@
                 {{#if editing}}
                   <div>{{config.dataVolumeSize}}{{t "generic.gigabyte"}}</div>
                 {{else}}
-                  {{input-number min=100 value=config.dataVolumeSize max=32768}}
+                  {{input-number
+                    value=config.dataVolumeSize
+                    min=100
+                    max=32768
+                    placeholder="clusterNew.huaweicce.dataVolumeSize.placeholder"
+                  }}
                   <span class="input-group-addon bg-default">{{t "generic.gigabyte"}}</span>
                 {{/if}}
               </div>
@@ -455,8 +442,9 @@
                 <div>{{config.rootVolumeType}}</div>
               {{else}}
                 {{new-select classNames="form-control"
-                             value=config.rootVolumeType
-                             content=volumeTypeContent
+                  value=config.rootVolumeType
+                  content=volumeTypeContent
+                  localizedLabel=true
                 }}
               {{/if}}
             </div>
@@ -468,7 +456,12 @@
                 {{#if editing}}
                   <div>{{config.rootVolumeSize}}{{t "generic.gigabyte"}}</div>
                 {{else}}
-                  {{input-number min=40 value=config.rootVolumeSize max=1024}}
+                  {{input-number
+                    value=config.rootVolumeSize
+                    min=40
+                    max=1024
+                    placeholder="clusterNew.huaweicce.rootVolumeSize.placeholder"
+                  }}
                   <span class="input-group-addon bg-default">{{t "generic.gigabyte"}}</span>
                 {{/if}}
               </div>
@@ -480,9 +473,9 @@
               {{#if editing}}
                 <div>{{config.nodeFlavor}}</div>
               {{else}}
-                {{new-select classNames="form-control"
-                             value=config.nodeFlavor
-                             content=nodeFlavorContent
+                {{searchable-select classNames="form-control"
+                  value=config.nodeFlavor
+                  content=nodeFlavorContent
                 }}
               {{/if}}
             </div>
