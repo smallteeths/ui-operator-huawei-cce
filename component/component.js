@@ -727,7 +727,7 @@ export default Ember.Component.extend(ClusterDriver, {
     const vipSubnets = get(this, 'vipSubnets') || []
     const filter = vipSubnets.map((s) => ({
       label: s.name,
-      value: s.id,
+      value: s.neutron_subnet_id,
     }))
 
     return filter
@@ -744,7 +744,7 @@ export default Ember.Component.extend(ClusterDriver, {
   editedVipSubnetName: computed('config.vipSubnetId', function() {
     const subnetId = get(this, 'config.vipSubnetId')
     const vipSubnets = get(this, 'vipSubnets') || []
-    const filter = vipSubnets.filter((s) => s.id === subnetId)[0] || {}
+    const filter = vipSubnets.filter((s) => s.neutron_subnet_id === subnetId)[0] || {}
 
     return filter.name
   }),
