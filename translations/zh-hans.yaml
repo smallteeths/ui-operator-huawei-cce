@@ -91,10 +91,13 @@ clusterNew:
       label: 带宽
     eipChargeMode:
       label: 计费模式
+      bandwith: 按带宽计费
+      traffic: 按流量计费
     eipCount:
       label: 数量
     availableZone:
       label: 当前区域
+      value: 可用区{num}
     billingMode:
       label: 计费模式
       payPerUse: 按需计费
@@ -104,6 +107,11 @@ clusterNew:
       placeholder: '例如: 172.16.0.0/16'
       none: 无配置
       cidrFormatError: '"容器网段" 格式错误'
+    kubernetesSvcIpRange:
+      label: 服务网段
+      placeholder: '例如: 10.247.0.0/16'
+      none: 无配置
+      cidrFormatError: '"服务网段" 格式错误'
     containerNetworkMode:
       label: 网络模型
       none: 无配置
@@ -136,6 +144,8 @@ clusterNew:
       countError: 已选或新建的弹性 IP数量必须和节点数保持一致
     eipType:
       label: Eip 类型
+      bgp: 全动态BGP
+      sbgp: 静态BGP
     clusterLabels:
       label: 集群标签
       none: 无标签
@@ -179,6 +189,8 @@ clusterNew:
       authenticating_proxy: 认证代理
     eipShareType:
       label: 共享Eip类型
+      per: 独享
+      whole: 共享
     generic:
       mbitS: Mbit/s
       isRequired: 必须填写

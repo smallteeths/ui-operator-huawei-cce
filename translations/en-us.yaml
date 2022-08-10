@@ -91,19 +91,27 @@ clusterNew:
       label: Eip Bandwidth Size
     eipChargeMode:
       label: Eip Charge Mode
+      bandwith: Billing by bandwidth
+      traffic: Billing by traffic
     eipCount:
       label: Eip Count
     availableZone:
       label: Zone
+      value: Availability Zone {num}
     billingMode:
       label: Billing Mode
       payPerUse: Pay-per-use
       yearly: Yearly/Monthly
     containerNetworkCidr:
-      label: Container Network Cidr
+      label: Container CIDR Block
       placeholder: e.g. 172.16.0.0/16
       none: No config
-      cidrFormatError: '"Container Network Cidr" format error'
+      cidrFormatError: '"Container CIDR Block" format error'
+    kubernetesSvcIpRange:
+      label: Service CIDR Block
+      placeholder: e.g. 10.247.0.0/16
+      none: No config
+      cidrFormatError: '"Service CIDR Block" format error'
     containerNetworkMode:
       label: Container Network Mode
       none: No config
@@ -136,6 +144,8 @@ clusterNew:
       countError: The count of selected or created must be equal to the count of nodes
     eipType:
       label: Eip Type
+      bgp: Dynamic BGP
+      sbgp: Static BGP
     clusterLabels:
       label: Cluster Label
       none: No label
@@ -179,6 +189,8 @@ clusterNew:
       authenticating_proxy: Authenticating Proxy
     eipShareType:
       label: EIP Share Type
+      per: PER
+      whole: WHOLE
     generic:
       mbitS: Mbit/s
       isRequired: is required

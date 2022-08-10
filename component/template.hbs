@@ -80,37 +80,6 @@
         <div class="row">
           <div class="col span-6 mb-0">
             <label class="acc-label">
-              {{t "clusterNew.huaweicce.clusterType.label"}}
-            </label>
-            {{#input-or-display
-                    editable=(and (eq step 2) (not editing))
-                    value=clusterTypeShowValue
-            }}
-              {{new-select classNames="form-control"
-                           value=config.clusterType
-                           content=clusterType
-                           localizedLabel=true
-              }}
-            {{/input-or-display}}
-          </div>
-          <div class="col span-6 mb-0">
-            <label class="acc-label">
-              {{t "clusterNew.huaweicce.description.label"}}
-            </label>
-            {{#input-or-display
-                    editable=(eq step 2)
-                    value=config.description
-            }}
-              {{input type="text"
-                      value=config.description
-                      classNames="form-control"
-                      placeholder=(t "clusterNew.huaweicce.description.placeholder")}}
-            {{/input-or-display}}
-          </div>
-        </div>
-        <div class="row">
-          <div class="col span-6 mb-0">
-            <label class="acc-label">
               {{t "clusterNew.huaweicce.masterVersion.label"}}{{field-required}}
             </label>
             {{#input-or-display
@@ -224,6 +193,28 @@
             {{/if}}
           </div>
           <div class="col span-6 mb-0">
+            <label class="acc-label">
+              {{t "clusterNew.huaweicce.kubernetesSvcIpRange.label"}}{{field-required}}
+            </label>
+            {{#if (or editing (not (eq step 2)))}}
+              <div>
+                {{#if config.kubernetesSvcIpRange}}
+                  {{config.kubernetesSvcIpRange}}
+                {{else}}
+                  {{t "clusterNew.huaweicce.kubernetesSvcIpRange.none"}}
+                {{/if}}
+              </div>
+            {{else}}
+              {{input type="text"
+                value=config.kubernetesSvcIpRange
+                classNames="form-control"
+                placeholder=(t "clusterNew.huaweicce.kubernetesSvcIpRange.placeholder")
+              }}
+            {{/if}}
+          </div>
+        </div>
+        <div class="row">
+          <div class="col span-6 mb-0">
             <label class="acc-label">{{t "clusterNew.huaweicce.vpcId.label"}}{{field-required}}</label>
             {{#if (or editing (not (eq step 2)))}}
               <div>
@@ -236,8 +227,6 @@
               }}
             {{/if}}
           </div>
-        </div>
-        <div class="row">
           <div class="col span-6 mb-0">
             <label class="acc-label">
               {{t "clusterNew.huaweicce.subnetId.label"}}{{field-required}}
@@ -260,6 +249,22 @@
         </div>
         <div class="row">
           <div class="col span-6 mb-0">
+            <label class="acc-label">
+              {{t "clusterNew.huaweicce.description.label"}}
+            </label>
+            {{#input-or-display
+                    editable=(eq step 2)
+                    value=config.description
+            }}
+              {{input type="text"
+                      value=config.description
+                      classNames="form-control"
+                      placeholder=(t "clusterNew.huaweicce.description.placeholder")}}
+            {{/input-or-display}}
+          </div>
+        </div>
+        <div class="row">
+          <div class="col span-6 mb-0">
             <label class="acc-label">{{t "clusterNew.huaweicce.externalServerEnabled.label"}}</label>
             {{#if (or editing (not (eq step 2)))}}
               {{#if config.externalServerEnabled}}
@@ -271,8 +276,8 @@
               <div class="radio">
                 <label>
                   {{radio-button
-                          selection=config.externalServerEnabled
-                          value=true
+                    selection=config.externalServerEnabled
+                    value=true
                   }}
                   {{t "clusterNew.huaweicce.externalServerEnabled.enabled"}}
                 </label>
@@ -339,7 +344,7 @@
                 {{t "clusterNew.huaweicce.availableZone.label"}}
               </label>
               {{#if editing}}
-                <div>{{config.availableZone}}</div>
+                <div>{{availableZoneShowValue}}</div>
               {{else}}
                 {{new-select classNames="form-control"
                              content=availableZoneContent
@@ -405,7 +410,7 @@
                 {{t "clusterNew.huaweicce.dataVolumeType.label"}}
               </label>
               {{#if editing}}
-                <div>{{config.dataVolumeType}}</div>
+                <div>{{dataVolumeTypeShowValue}}</div>
               {{else}}
                 {{new-select classNames="form-control"
                   value=config.dataVolumeType
@@ -416,17 +421,18 @@
             </div>
             <div class="col span-6 mb-0">
               <label class="acc-label">
-                {{t "clusterNew.huaweicce.dataVolumeSize.label"}}
+                {{t "clusterNew.huaweicce.dataVolumeSize.label"}}{{field-required}}
               </label>
               <div class="input-group">
                 {{#if editing}}
                   <div>{{config.dataVolumeSize}}{{t "generic.gigabyte"}}</div>
                 {{else}}
-                  {{input-number
+                  {{input-integer
                     value=config.dataVolumeSize
                     min=100
                     max=32768
-                    placeholder="clusterNew.huaweicce.dataVolumeSize.placeholder"
+                    step="1"
+                    placeholder=(t "clusterNew.huaweicce.dataVolumeSize.placeholder")
                   }}
                   <span class="input-group-addon bg-default">{{t "generic.gigabyte"}}</span>
                 {{/if}}
@@ -439,7 +445,7 @@
                 {{t "clusterNew.huaweicce.rootVolumeType.label"}}
               </label>
               {{#if editing}}
-                <div>{{config.rootVolumeType}}</div>
+                <div>{{rootVolumeTypeShowValue}}</div>
               {{else}}
                 {{new-select classNames="form-control"
                   value=config.rootVolumeType
@@ -450,17 +456,18 @@
             </div>
             <div class="col span-6 mb-0">
               <label class="acc-label">
-                {{t "clusterNew.huaweicce.rootVolumeSize.label"}}
+                {{t "clusterNew.huaweicce.rootVolumeSize.label"}}{{field-required}}
               </label>
               <div class="input-group">
                 {{#if editing}}
                   <div>{{config.rootVolumeSize}}{{t "generic.gigabyte"}}</div>
                 {{else}}
-                  {{input-number
+                  {{input-integer
                     value=config.rootVolumeSize
                     min=40
                     max=1024
-                    placeholder="clusterNew.huaweicce.rootVolumeSize.placeholder"
+                    step="1"
+                    placeholder=(t "clusterNew.huaweicce.rootVolumeSize.placeholder")
                   }}
                   <span class="input-group-addon bg-default">{{t "generic.gigabyte"}}</span>
                 {{/if}}
@@ -545,20 +552,23 @@
                     {{t "clusterNew.huaweicce.eipType.label"}}
                   </label>
                   {{new-select classNames="form-control"
-                               value=config.eipType
-                               content=eipTypeContent
+                    value=config.eipType
+                    content=eipTypeContent
+                    localizedLabel=true
                   }}
                   <label class="acc-label">
                     {{t "clusterNew.huaweicce.eipShareType.label"}}
                   </label>
                   {{new-select classNames="form-control"
-                               value=config.eipShareType
-                               content=eipShareTypeContent
+                    value=config.eipShareType
+                    content=eipShareTypeContent
+                    localizedLabel=true
                   }}
                   <label class="acc-label">{{t "clusterNew.huaweicce.eipChargeMode.label"}}</label>
                   {{new-select classNames="form-control"
-                               value=config.eipChargeMode
-                               content=eipChargeModeContent
+                    value=config.eipChargeMode
+                    content=eipChargeModeContent
+                    localizedLabel=true
                   }}
                   <label class="acc-label">{{t "clusterNew.huaweicce.eipBandwidthSize.label"}}</label>
                   <div class="input-group">
