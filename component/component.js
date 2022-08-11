@@ -163,20 +163,6 @@ export default Ember.Component.extend(ClusterDriver, {
       label: 'clusterNew.huaweicce.eipType.sbgp',
       value: '5_sbgp',
     }],
-  nodeOperationSystemContent: [
-    {
-      label: 'EulerOS 2.9',
-      value: 'EulerOS 2.9',
-    }, {
-      label: 'CentOS 7.6',
-      value: 'CentOS 7.6',
-    }, {
-      label: 'Ubuntu 18.04',
-      value: 'Ubuntu 18.04',
-    }, {
-      label: 'EulerOS 2.5',
-      value: 'EulerOS 2.5',
-    }],
 
   validityPeriodContent: [
     {
@@ -624,6 +610,20 @@ export default Ember.Component.extend(ClusterDriver, {
     })
   }),
 
+  nodeOperationSystemContent: computed('config.masterVersion', function() {
+    const types = ['EulerOS 2.9', 'CentOS 7.6', 'EulerOS 2.5'];
+
+    const masterVersion = get(this, 'masterVersion');
+
+    if(masterVersion !== 'v1.19'){
+      types.push('Ubuntu 18.04');
+    }
+
+    return types.map(item=>({
+      label: item,
+      value: item
+    }))
+  }),
   containerNetworkModeContent: computed('config.clusterType', function() {
     const choices     = CONTAINER_NETWORK_MODES;
     const clusterType = get(this, 'config.clusterType');
