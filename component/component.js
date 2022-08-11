@@ -150,7 +150,7 @@ export default Ember.Component.extend(ClusterDriver, {
   eipChargeModeContent: [
     {
       label: 'clusterNew.huaweicce.eipChargeMode.bandwith',
-      value: null,
+      value: 'bandwith',
     }, {
       label: 'clusterNew.huaweicce.eipChargeMode.traffic',
       value: 'traffic',
