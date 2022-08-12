@@ -206,16 +206,6 @@ export default Ember.Component.extend(ClusterDriver, {
       value: '1 year'
     },
   ],
-  eipShareTypeContent: [
-    {
-      label: 'clusterNew.huaweicce.eipShareType.per',
-      value: 'PER'
-    },
-    {
-      label: 'clusterNew.huaweicce.eipShareType.whole',
-      value: 'WHOLE'
-    },
-  ],
   vpcs:                    null,
   subnets:                 null,
   eipIds:                  null,
