@@ -602,10 +602,9 @@ export default Ember.Component.extend(ClusterDriver, {
 
   nodeOperationSystemContent: computed('config.masterVersion', function() {
     const types = ['EulerOS 2.9', 'CentOS 7.6', 'EulerOS 2.5'];
+    const containerNetworkMode = get(this, 'config.containerNetworkMode');
 
-    const masterVersion = get(this, 'config.masterVersion');
-
-    if(masterVersion !== 'v1.19'){
+    if(containerNetworkMode !== 'overlay_l2'){
       types.push('Ubuntu 18.04');
     }
 
