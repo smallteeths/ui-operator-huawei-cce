@@ -60,7 +60,7 @@ clusterNew:
     masterVersion:
       label: 版本
       warningNotRecommend: “{version}”，此版本华为 CCE 不推荐使用。具体请查阅华为官方文档。
-      warningRacher: “{version}”，此版本不在 Rancher 支持矩阵范围内，请升级 Rancher 版本。可参考
+      warningRacher: “{version}”，此版本不在 Rancher 支持矩阵范围内。可参考
       warningRancherTip: Rancher 支持矩阵。
     vpcId:
       label: 虚拟私有云

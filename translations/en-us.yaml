@@ -60,8 +60,8 @@ clusterNew:
     masterVersion:
       label: Master Version
       warningNotRecommend: “{version}”，This version of Huawei CCE is not recommended. For details, see huawei official documents.
-      warningRacher: “{version}”，This version is not supported by Rancher, please upgrade rancher version for reference
-      warningRancherTip: Rancher supported versions.
+      warningRacher: “{version}”，This version is not supported by Rancher. Reference
+      warningRancherTip: Rancher support matrix.
     vpcId:
       label: VPC Name
     subnetId:
