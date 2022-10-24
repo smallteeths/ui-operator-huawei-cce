@@ -130,7 +130,7 @@ clusterNew:
       label: Node Count
     nodeFlavor:
       label: Node Flavor
-    ssh:
+    sshKey:
       label: SSH Key Name
     eip:
       label: Eip

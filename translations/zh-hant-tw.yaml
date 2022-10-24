@@ -130,7 +130,7 @@ clusterNew:
       label: 節點個數
     nodeFlavor:
       label: 節點規格
-    ssh:
+    sshKey:
       label: 密鑰對
     eip:
       label: 彈性IP

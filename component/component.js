@@ -300,7 +300,7 @@ export default Ember.Component.extend(ClusterDriver, {
     this._super(...arguments);
     let errors = get(this, 'errors') || [];
 
-    // errors = this.validateFields(errors, ['sshKey'], 'config')
+    errors = this.validateFields(errors, ['sshKey'], 'config')
 
     if (get(this, 'config.authentiactionMode') === 'authenticating_proxy') {
       errors = this.validateFields(errors, ['authenticatingProxyCa'], 'config')
