@@ -243,7 +243,7 @@ export default Ember.Component.extend(ClusterDriver, {
         dataVolumeSize:        100,
         vpcId:                 null,
         clusterType:           'VirtualMachine',
-        masterVersion:         'v1.21',
+        masterVersion:         'v1.23',
         billingMode:           0,
         containerNetworkMode:  'overlay_l2',
         clusterFlavor:         'cce.s2.small',
