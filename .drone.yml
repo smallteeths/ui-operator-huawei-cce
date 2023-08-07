@@ -9,7 +9,7 @@ platform:
 
 steps:
   - name: build
-    image: node
+    image: node:16.13.1
     commands:
       - yarn install
       - yarn run build
@@ -29,7 +29,7 @@ steps:
       PLUGIN_SOURCE: ./dist
       ALIYUN_BUCKET: oss://dev-tool
       ALIYUN_ENDPOINT: http://oss-cn-shenzhen.aliyuncs.com
-      PLUGIN_TARGET: huawei-cce
+      PLUGIN_TARGET: huawei-operator-cce
       PLUGIN_RECURSIVE: -r
       PLUGIN_ACCESS: public-read
     commands:
@@ -49,7 +49,7 @@ steps:
       PLUGIN_SOURCE: ./dist
       ALIYUN_BUCKET: oss://rancher2-drivers
       ALIYUN_ENDPOINT: http://oss-cn-beijing.aliyuncs.com
-      PLUGIN_TARGET: pandaria/ui/cluster-driver-huawei/${DRONE_TAG}
+      PLUGIN_TARGET: pandaria/ui/cluster-operator-huawei/${DRONE_TAG}
       PLUGIN_RECURSIVE: -r
       PLUGIN_ACCESS: public-read
     commands:
@@ -57,8 +57,6 @@ steps:
     when:
       event:
         - tag
-
-
 
   - name: github_binary_prerelease
     image: plugins/github-release
