@@ -9,6 +9,9 @@ clusterNew:
     access:
       title: 帳戶訪問
       detail: 選擇用於啟動華為雲容器引擎的區域和API KEY。
+      nodePoolUpdateError: 節點池正在創建中，無法升級，請稍後再試。
+      next: '下一步: 配置集羣'
+      loading: '從華為雲獲取配置叢集信息...'
     accessKey:
       label: 訪問密鑰ID
       placeholder: CCE訪問密鑰ID
@@ -38,12 +41,23 @@ clusterNew:
       af_south_1: 非洲-約翰內斯堡
       sa_brazil_1: 拉美-聖保羅一
       la_south_2: 拉美-聖地亞哥
+      cn_north_9: 華北-烏蘭察布一
+      eu_west_0: 歐洲-巴黎
+      eu_west_101: 歐洲-都柏林
+      tr_west_1: 土耳其-伊斯坦布爾
+      ae_ad_1: 中東-阿布扎比-OP5
     business:
       label: 業務
-    checkAccount: '下一步: 配置集羣'
+    clusterSelect:
+      title: 選擇集群
+      detail: 選擇要註冊的 TKE 集群
+      next: 註冊集群
+      importCluster: 集群
+      required: 必須設置需要導入的集群
+      placeholder: '請選擇'
     checkingAccount: 用戶校驗中...
-    configureNode: '下一步: 配置節點'
-    configuringNode: 配置中...
+    configureNodepool: '下一步: 配置節點池'
+    configuringNodepool: 获取節點池信息...
     clusterOption:
       title: 集羣選項
       detail: 為集羣自定義Kubernetes選項
@@ -57,23 +71,22 @@ clusterNew:
         label: 鯤鵬集羣
     clusterFlavor:
       label: Cluster Flavor
-    masterVersion:
+    version:
       label: 版本
       warningNotRecommend: “{version}”，此版本華為 CCE 不推薦使用。具體請查閱華為官方文檔。
       warningRacher: “{version}”，此版本不在 Rancher 支持矩陣範圍內。可參考
       warningRancherTip: Rancher 支持矩陣。
     vpcId:
       label: 虛擬私有雲
+      default: 自動創建
     subnetId:
       label: 所在子網
       none: 無可用子網
+      default: 自動創建
     highwaySubnet:
       label: 高速網卡
       placeholder: 高速子網
       none: 沒有高速子網被使用
-    nodeOption:
-      title: 節點選項
-      detail: 為節點自定義選項
     dataVolumeType:
       label: 數據盤類型
     dataVolumeSize:
@@ -84,6 +97,7 @@ clusterNew:
       SSD: 超高IO
       SATA: 普通IO
       GPSSD: 通用SSD
+      ESSD: 極速型SSD
     description:
       label: 描述
       placeholder: '例如: 華為CCE集羣'
@@ -91,13 +105,14 @@ clusterNew:
       label: 帶寬
     eipChargeMode:
       label: 計費模式
-      bandwith: 按帶寬計費
+      bandwidth: 按帶寬計費
       traffic: 按流量計費
     eipCount:
       label: 數量
     availableZone:
       label: 當前區域
       value: 可用區{num}
+      random: 随机
     billingMode:
       label: 計費模式
       payPerUse: 按需計費
@@ -107,7 +122,7 @@ clusterNew:
       placeholder: '例如: 172.16.0.0/16'
       none: 無配置
       cidrFormatError: '"容器網段" 格式错误'
-    kubernetesSvcIpRange:
+    kubernetesSvcIPRange:
       label: 服務網段
       placeholder: '例如: 10.247.0.0/16'
       none: 無配置
@@ -126,14 +141,16 @@ clusterNew:
     rootVolumeSize:
       label: 系統盤大小
       placeholder: "容量範圍: 40 ~ 1024"
-    nodeCount:
+    initialNodeCount:
       label: 節點個數
-    nodeFlavor:
+    flavor:
       label: 節點規格
     sshKey:
       label: 密鑰對
-    eip:
-      label: 彈性IP
+    publicAccess:
+      label: 使用公網訪問
+    kubeProxyMode:
+      label: 服務轉發模式
     eipSelection:
       none: 暫不使用
       new: 創建新的
@@ -164,16 +181,36 @@ clusterNew:
       disabled: 禁用 - CCE集羣將部署在Rancher所在的VPC
     highAvailability:
       label: 高可用
+    runtime:
+      label: 容器引擎
+    securityGroup:
+      label: 安全組
+      required: 請選擇安全組
+      default: 默认安全組
     managementScale:
       label: 集羣管理規模
-    nodeOperationSystem:
+    operatingSystem:
       label: 操作系統
     authenticatingProxyCa:
-      label: CA根證書
+      label: CA 根證書
+    authenticatingProxyCert:
+      label: 客戶端證書
+    authenticatingProxyPrivateKey:
+      label: 客戶端證書私鑰
     validityPeriod:
       label: 有效期
     bmsIsAutoRenew:
-      label: 自動更新
+      label: 自動续费
+      months: |
+        {count, plural,
+          =1 {個月}
+          other {個月}
+        }
+      years: |
+        {count, plural,
+          =1 {年}
+          other {年}
+        }
     loginMode:
       label: 登錄方式
       password: 密碼
@@ -184,9 +221,9 @@ clusterNew:
     userName:
       label: 用戶名
     authentiactionMode:
-      label: 認證模式
-      rbac: RBAC
-      authenticating_proxy: 認證代理
+      label: 證書認證
+      rbac: 系統默認
+      authenticating_proxy: 自定義
     eipShareType:
       label: 共享Eip類型
       per: 獨享
@@ -194,3 +231,13 @@ clusterNew:
     generic:
       mbitS: Mbit/s
       isRequired: 必須填寫
+    nodeGroups:
+      title: 管理節點組
+      detail: 自定義管理節點組
+      addLabel: 添加機型
+      noNodes: 沒有節點組
+    nodePoolName:
+      label: 節點池名稱
+      placeholder: 例如：nodepool
+      required: 必須設置 worker 節點池名稱
+      same: 節點池名稱 “{name}” 不唯一

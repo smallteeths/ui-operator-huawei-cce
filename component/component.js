@@ -23,114 +23,82 @@ const next         = Ember.run.next;
 const equal        = Ember.computed.equal;
 const reject       = Ember.RSVP.reject;
 
-/*!!!!!!!!!!!GLOBAL CONST END!!!!!!!!!!!*/
-
 const languages = LANGUAGE;
 
-const ZONES = [
-  {
-    label: 'clusterNew.huaweicce.region.cn_north_1',
-    value: 'cn-north-1',
-  },{
-    label: 'clusterNew.huaweicce.region.cn_north_4',
-    value: 'cn-north-4',
-  },{
-    label: 'clusterNew.huaweicce.region.cn_east_3',
-    value: 'cn-east-3',
-  },{
-    label: 'clusterNew.huaweicce.region.cn_east_2',
-    value: 'cn-east-2',
-  },{
-    label: 'clusterNew.huaweicce.region.cn_south_1',
-    value: 'cn-south-1',
-  },{
-    label: 'clusterNew.huaweicce.region.cn_southwest_2',
-    value: 'cn-southwest-2',
-  },{
-    label: 'clusterNew.huaweicce.region.ap_southeast_1',
-    value: 'ap-southeast-1',
-  },{
-    label: 'clusterNew.huaweicce.region.ap_southeast_2',
-    value: 'ap-southeast-2',
-  },{
-    label: 'clusterNew.huaweicce.region.ap_southeast_3',
-    value: 'ap-southeast-3',
-  },{
-    label: 'clusterNew.huaweicce.region.af_south_1',
-    value: 'af-south-1',
-  },{
-    label: 'clusterNew.huaweicce.region.sa_brazil_1',
-    value: 'sa-brazil-1',
-  },{
-    label: 'clusterNew.huaweicce.region.la_south_2',
-    value: 'la-south-2',
-  },
-];
+const MANAGEMENT_SCALE_VIRTUAL = [{
+  label: '50',
+  value: 'small',
+}, {
+  label: '200',
+  value: 'medium',
+}, {
+  label: '1000',
+  value: 'large',
+}, {
+  label: '2000',
+  value: 'xlarge',
+}]
 
-const MANAGEMENT_SCALE_BAREMETAL = [
-  {
-    label: '10',
-    value: 'small',
-  }, {
-    label: '100',
-    value: 'medium',
-  }, {
-    label: '500',
-    value: 'large',
-  }]
+const CONTAINER_NETWORK_MODES = [{
+  label: 'clusterNew.huaweicce.containerNetworkMode.overlay.label',
+  value: 'overlay_l2',
+  bare: false,
+// }, {
+//   label: 'clusterNew.huaweicce.containerNetworkMode.underlayIpvlan.label',
+//   value: 'underlay_ipvlan',
+//   bare: true,
+}, {
+  label: 'clusterNew.huaweicce.containerNetworkMode.vpcRouter.label',
+  value: 'vpc-router',
+  bare: false
+}]
 
-const MANAGEMENT_SCALE_VIRTUAL = [
-  {
-    label: '50',
-    value: 'small',
-  }, {
-    label: '200',
-    value: 'medium',
-  }, {
-    label: '1000',
-    value: 'large',
-  }]
+const BILLING_MODES = [{
+  label: 'clusterNew.huaweicce.billingMode.payPerUse',
+  value: 0,
+}, {
+  label: 'clusterNew.huaweicce.billingMode.yearly',
+  value: 1,
+}];
 
-const CONTAINER_NETWORK_MODES = [
-  {
-    label: 'clusterNew.huaweicce.containerNetworkMode.overlay.label',
-    value: 'overlay_l2',
-    bare: false,
-  }, {
-    label: 'clusterNew.huaweicce.containerNetworkMode.underlayIpvlan.label',
-    value: 'underlay_ipvlan',
-    bare: true,
-  }, {
-    label: 'clusterNew.huaweicce.containerNetworkMode.vpcRouter.label',
-    value: 'vpc-router',
-    bare: false
-  }]
+const DEFAULT_NODE_GROUP_CONFIG = {
+  name:            'default-nodepool',
+  flavor:          't6.large.2',
+  availableZone:   null,
+  sshKey:          null,
+  rootVolume:      {},
+  dataVolumes:     [],
+	billingMode:     null, 
+	OperatingSystem: null, 
+	// PublicIP:        null, 
+	// extendParam:     null, 
+	tags:            null, 
+	count:           null, 
+  runtime:         'containerd',
+}
 
+const BILLING_MODE_VALIDITY_PERIOD = {
+  month: [1,2,3,4,5,6,7,8,9],
+  year:  [1,2,3],
+}
 
-/*!!!!!!!!!!!DO NOT CHANGE START!!!!!!!!!!!*/
+/*!!!!!!!!!!!GLOBAL CONST END!!!!!!!!!!!*/
+
 export default Ember.Component.extend(ClusterDriver, {
   driverName:  '%%DRIVERNAME%%',
-  configField: '%%DRIVERNAME%%EngineConfig',
+  configField: 'cceConfig',
   app:         service(),
   router:      service(),
   session:     service(),
   intl:        service(),
 
   layout:       null,
-  configField: 'huaweiEngineConfig',
   volumeTypes: [],
-  zones:       ZONES,
-  clusterType: [
-    {
-      label: 'clusterNew.huaweicce.clusterType.VirtualMachine.label',
-      value: 'VirtualMachine',
-    }
-  ],
-  masterVersions: [
+  versionChoices: [
     {
       label: 'v1.25',
       value: 'v1.25',
-      rancherEnabled: false,
+      rancherEnabled: true,
     },
     {
       label: 'v1.23',
@@ -138,83 +106,58 @@ export default Ember.Component.extend(ClusterDriver, {
       rancherEnabled: true,
     },
   ],
-  eipChargeModeContent: [
+  eipChargeModeChoices: [
     {
-      label: 'clusterNew.huaweicce.eipChargeMode.bandwith',
-      value: 'bandwith',
+      label: 'clusterNew.huaweicce.eipChargeMode.bandwidth',
+      value: 'bandwidth',
     }, {
       label: 'clusterNew.huaweicce.eipChargeMode.traffic',
       value: 'traffic',
     }],
-  eipTypeContent: [
+  eipTypeChoices: [
     {
       label: 'clusterNew.huaweicce.eipType.bgp',
       value: '5_bgp',
     }, {
       label: 'clusterNew.huaweicce.eipType.sbgp',
       value: '5_sbgp',
-    }],
-
-  validityPeriodContent: [
-    {
-      label: '1 month',
-      value: '1 month'
-    },
-    {
-      label: '2 months',
-      value: '2 month'
-    },
-    {
-      label: '3 months',
-      value: '3 month'
-    },
-    {
-      label: '4 months',
-      value: '4 month'
-    },
-    {
-      label: '5 months',
-      value: '5 month'
-    },
-    {
-      label: '6 months',
-      value: '6 month'
-    },
-    {
-      label: '7 months',
-      value: '7 month'
-    },
-    {
-      label: '8 months',
-      value: '8 month'
-    },
-    {
-      label: '9 months',
-      value: '9 month'
-    },
-    {
-      label: '1 year',
-      value: '1 year'
     },
   ],
+
+
   vpcs:                    null,
   subnets:                 null,
   eipIds:                  null,
-  nodeFlavors:             null,
-  keypairs:                null,
-  availableZones:          null,
   step:                    1,
   eipSelection:            'none',
   highAvailabilityEnabled: 's2',
   managementScale:         'small',
   validityPeriod:          '1 month',
-  authConfigured:           false,
   publicCloud:             null,
+  nodePoolList:            [],
+  config:                  null,
 
-  editing:                 equal('mode', 'edit'),
+  authenticatingProxyCa:         null,
+  authenticatingProxyCert:       null,
+  authenticatingProxyPrivateKey: null,
 
-  config: null,
-  // config:      alias('cluster.%%DRIVERNAME%%kcsEngineConfig'),
+  sshKeyChoices:           [],
+  securityGroupChoices:    [],
+  validityPeriodChoices:   [],
+  eipChoices:              [],
+
+  flavorChoicesByZones:     {},
+  volumeTypeChoicesByZones: {},
+  
+  loadedRegionFor:             null,
+  cloudCredentialDriverName:   'huawei',
+  containerNetworkModeChoices: CONTAINER_NETWORK_MODES,
+  managementScaleChoices:      MANAGEMENT_SCALE_VIRTUAL,
+  billingModeChoices:          BILLING_MODES,
+  clusterChoices:              [],
+
+  isNew:   equal('mode', 'new'),
+  editing: equal('mode', 'edit'),
 
   init() {
     // This does on the fly template compiling, if you mess with this :cry:
@@ -236,34 +179,31 @@ export default Ember.Component.extend(ClusterDriver, {
     if ( !config ) {
       config = this.get('globalStore').createRecord({
         type:                  'huaweiEngineConfig',
-        accessKey:             null,
-        secretKey:             null,
-        region:                'cn-north-1',
-        projectId:             null,
+        regionID:              '',
         dataVolumeSize:        100,
         vpcId:                 null,
-        clusterType:           'VirtualMachine',
-        masterVersion:         'v1.23',
+        version:               'v1.25',
         billingMode:           0,
-        containerNetworkMode:  'overlay_l2',
+        containerNetworkMode:  'vpc-router',
         clusterFlavor:         'cce.s2.small',
         dataVolumeType:        null,
         rootVolumeType:        null,
-        nodeCount:             1,
         rootVolumeSize:        40,
         externalServerEnabled: false,
-        nodeOperationSystem:   'EulerOS 2.9',
-        containerNetworkCidr:  '',
-        kubernetesSvcIpRange:  '',
+        containerNetworkCidr:  '10.0.0.0/16',
+        kubernetesSvcIPRange:  '10.247.0.0/16',
         bmsIsAutoRenew:        'false',
         userName:              'root',
+        authentiactionMode:    'rbac',
+        eipChargeMode:         'bandwidth',
+        securityGroup:         '',
+        kubeProxyMode:         'iptables',
       });
 
-      set(this, 'cluster.%%DRIVERNAME%%EngineConfig', config);
       set(this, 'config', config);
       this.validityPeriodChange();
     } else {
-      const clusterFlavor = get(config, 'clusterFlavor');
+      const clusterFlavor = get(config, 'flavor');
 
       if ( clusterFlavor ) {
         const arr = clusterFlavor.split('.')
@@ -273,46 +213,96 @@ export default Ember.Component.extend(ClusterDriver, {
           'managementScale':         arr[2]
         });
       }
-
-      setProperties(config, {
-        accessKey: null,
-        secretKey: null,
-      });
-
-      if ( get(config, 'nodeLabels') === null ) {
-        set(config, 'nodeLabels', {});
-      }
-
-      if ( get(config, 'eipIds') === null ) {
-        set(config, 'eipIds', []);
-      }
+      this.initConfig(config);
     }
+
+    this.setValidityPeriodChoices();
   },
-  /*!!!!!!!!!!!DO NOT CHANGE END!!!!!!!!!!!*/
-  // Add custom validation beyond what can be done from the config API schema
 
   validate() {
     this._super(...arguments);
-    let errors = get(this, 'errors') || [];
 
-    errors = this.validateFields(errors, ['sshKey'], 'config')
+    const errors = [];
+    const intl = get(this, 'intl');
+
+    this.validateFields(errors, ['name'], 'cluster');
+    this.validateFields(errors, ['sshKey', 'flavor', 'nodePoolName'], 'nodePoolList')
+
+    // nodepool name unique validate
+    const nodePoolList = get(this, 'nodePoolList');
+    const nodePoolNames = [];
+
+    nodePoolList.forEach(nodePool=>{
+      if(nodePoolNames.includes(nodePool.nodePoolName)){
+        errors.pushObject(intl.t('clusterNew.huaweicce.nodePoolName.same', {name: nodePool.nodePoolName}))
+      } else {
+        nodePoolNames.push(nodePool.nodePoolName);
+      }
+    })
+
+    if(get(this, 'primaryResource.name') && get(this, 'primaryResource.name.length') < 4){
+      errors.pushObject(intl.t('clusterNew.huaweicce.name.minLengthError'))
+    }
 
     if (get(this, 'config.authentiactionMode') === 'authenticating_proxy') {
-      errors = this.validateFields(errors, ['authenticatingProxyCa'], 'config')
+      this.validateFields(errors, ['authenticatingProxyCa', 'authenticatingProxyCert', 'authenticatingProxyPrivateKey'], 'config')
     }
-    set(this, 'errors', errors);
 
-    return errors.length === 0
+    return errors
   },
 
   actions: {
-    async checkAccount(cb) {
-      const requiredConfig = ['projectId', 'accessKey', 'secretKey', 'region']
+    async huaweiLogin(cb) {
+      try {
+        let step;
+        let hash = [
+          this.getVpcs(),
+          this.getEipIds(),
+          this.getVipSubnet(),
+          this.fetchVolumeTypes(),
+          this.fetchAvailableZones(),
+          this.fetchSecurityGroups(),
+          this.fetchKeypairs(),
+          this.fetchEips(),
+        ];
 
-      set(this, 'errors', [])
-      let errors = [];
+        if (this.isImportProvider && this.isNew){
+          step = 1.5;
+          await this.fetchClusters();
 
-      errors = this.validateFields(errors, requiredConfig, 'config')
+          set(this, 'step', step);
+          cb && cb(true);
+
+          return;
+        } else if (this.isImportProvider && !this.isNew) {
+          step = 3;
+        } else {
+          step = 2;
+        }
+
+        await all(hash);
+        set(this, 'step', step);
+        cb && cb(true);
+      } catch (e) {
+        const errors = [];
+
+        errors.push(get(e, 'body.Message') || get(e, 'body.message') || e);
+        set(this, 'errors', errors);
+        cb && cb();
+      }
+    },
+
+    registerCluster(cb){
+      setProperties(this, { 'errors': null });
+
+      const errors = get(this, 'errors') || [];
+      const clusterID = get(this, 'config.clusterId')
+      const intl    = get(this, 'intl');
+
+      if ( !clusterID ) {
+        errors.push(intl.t('clusterNew.huaweicce.clusterSelect.required'));
+      }
+
       if (errors.length > 0) {
         set(this, 'errors', errors);
         cb();
@@ -320,33 +310,21 @@ export default Ember.Component.extend(ClusterDriver, {
         return;
       }
 
-      setProperties(this, {
-        'errors':           null,
-        'config.accessKey': (get(this, 'config.accessKey') || '').trim(),
-        'config.secretKey': (get(this, 'config.secretKey') || '').trim(),
-      });
-
-      try {
-        await this.getVpcs();
-        await this.getEipIds();
-        await this.getVipSubnet();
-        await this.getVolumeTypes();
-
-        set(this, 'step', 2);
-        cb();
-      } catch (e) {
-        const errors = get(this, 'errors') || [];
-
-        errors.pushObject(e.message || e);
-        set(this, 'errors', errors);
-        cb();
-
-        return;
+      const config = {
+        imported: true,
+        name: get(this, 'primaryResource.name'),
+        huaweiCredentialSecret: get(this, 'primaryResource.cloudCredentialId'),
+        clusterID,
+        regionID: get(this, 'selectedCloudCredential.regionID'),
       }
+
+      set(this, 'cluster.cceConfig', config);
+
+      this.send('driverSave', cb);
     },
 
     async configureNode(cb) {
-      const requiredConfig = ['vpcId', 'subnetId', 'containerNetworkCidr', 'kubernetesSvcIpRange'];
+      const requiredConfig = ['containerNetworkCidr', 'kubernetesSvcIPRange'];
       const cidrIPV4RegExp = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\/\d{1,2}$/;
       const intl = get(this, 'intl');
 
@@ -358,8 +336,8 @@ export default Ember.Component.extend(ClusterDriver, {
       if(get(this, 'config.containerNetworkCidr') && !cidrIPV4RegExp.test(get(this, 'config.containerNetworkCidr'))){
         errors.pushObject(intl.t('clusterNew.huaweicce.containerNetworkCidr.cidrFormatError'))
       }
-      if(get(this, 'config.kubernetesSvcIpRange') && !cidrIPV4RegExp.test(get(this, 'config.kubernetesSvcIpRange'))){
-        errors.pushObject(intl.t('clusterNew.huaweicce.kubernetesSvcIpRange.cidrFormatError'))
+      if(get(this, 'config.kubernetesSvcIPRange') && !cidrIPV4RegExp.test(get(this, 'config.kubernetesSvcIPRange'))){
+        errors.pushObject(intl.t('clusterNew.huaweicce.kubernetesSvcIPRange.cidrFormatError'))
       }
 
       if (errors.length > 0) {
@@ -369,17 +347,42 @@ export default Ember.Component.extend(ClusterDriver, {
         return;
       }
 
-      if (get(this, 'authConfigured')) {
-        set(this, 'step', 3)
-        cb()
+      if(!this.nodePoolList || !this.nodePoolList.length){
+        this.send('addNodePool');
+      } else {
 
-        return
+        // edited
+        this.nodePoolList.forEach(nodePool=>{
+          const displayShowValue = {
+            displayFlavor:         nodePool.flavor,
+            displayRootVolumeType: intl.t(`clusterNew.huaweicce.volumetype.${nodePool.rootVolumeType}`),
+            displayDataVolumeType: intl.t(`clusterNew.huaweicce.volumetype.${nodePool.dataVolumeType}`),
+            displayBillingMode:    this.configNameDisplay(nodePool.billingMode, get(this,'billingModeChoices'), true),
+            displayAvailableZone:  this.configNameDisplay(nodePool.availableZone, get(this,'availableZoneChoices')),
+            displaySshKey:         this.configNameDisplay(nodePool.sshKey, get(this,'sshKeyChoices')),
+          }
+
+          Object.assign(nodePool, displayShowValue);
+        })
+          
       }
-      try {
-        await this.getAvaliableZone();
-        await this.listCloudServerFlavors();
-        await this.listKeypairs();
 
+      try {
+        const hash = [
+          // this.listKeypairs(),
+        ];
+
+        this.nodePoolList.forEach(nodePool=>{
+          hash.push(this.fetchFlavors(nodePool));
+        })
+
+        // await this.getAvaliableZone();
+        // await this.fetchFlavors();
+        // await this.listKeypairs();
+        // await this.fetchAvailableZones();
+
+        
+        await all(hash);
         set(this, 'step', 3)
       } catch (err) {
         const errors = get(this, 'errors') || [];
@@ -393,6 +396,9 @@ export default Ember.Component.extend(ClusterDriver, {
     },
 
     setLabels(section) {
+      if( !section ){
+        return;
+      }
       let obj = {}
 
       section.map((s) => {
@@ -400,50 +406,83 @@ export default Ember.Component.extend(ClusterDriver, {
           obj[s.key] = s.value
         }
       })
-      set(this, 'config.labels', obj)
+
+      set(this, 'config.tags', obj)
+      set(this, 'config.taglength', Object.keys(obj).length)
     },
 
-    setNodeLabels(section) {
-      let obj = {}
+    finishAndSelectCloudCredential(cred) {
+      if (cred) {
+        set(this, 'config.regionID', get(cred, 'huaweicredentialConfig.regionID'));
+        set(this, 'primaryResource.cloudCredentialId', get(cred, 'id'));
 
-      section.map((s) => {
-        if (s.key && s.value) {
-          obj[s.key] = s.value
-        }
-      })
-      set(this, 'config.nodeLabels', obj)
+        this.send('huaweiLogin');
+      }
+    },
+
+    addNodePool() {
+      let nodePoolList = get(this, 'nodePoolList');
+      const volumeTypeChoicesByZones = get(this, 'volumeTypeChoicesByZones');
+      const availableZone = this.getDefaultSelected(this.availableZoneChoices);
+      const volumeTypeChoices = volumeTypeChoicesByZones[availableZone]  || [];
+      const volumeType = this.getDefaultSelected(volumeTypeChoices);
+      const flavorChoicesByZones = get(this, 'flavorChoicesByZones');
+      const flavorChoices = flavorChoicesByZones[availableZone] || [];
+      const { sshKeyChoices, operatingSystemChoices } = this;
+      const nodePoolConfig = {
+        ...DEFAULT_NODE_GROUP_CONFIG,
+        availableZone,
+        billingMode:       0,
+        bmsIsAutoRenew:    false,
+        rootVolumeType:    volumeType,
+        dataVolumeType:    volumeType,
+        dataVolumeSize:    '100',
+        rootVolumeSize:    '50',
+        initialNodeCount:  '1',
+        operatingSystem:   this.getDefaultSelected(operatingSystemChoices),
+        sshKey:            this.getDefaultSelected(sshKeyChoices),
+        flavor:            this.getDefaultSelected(flavorChoices, 'c7.large.2'),
+        volumeTypeChoices,
+        flavorChoices,
+        // securityGroup:     this.getDefaultSelected(securityGroupChoices),
+      };
+
+      if (!Array.isArray(nodePoolList)) {
+        nodePoolList = [];
+      }
+
+      nodePoolList.pushObject(nodePoolConfig);
+
+      set(this, 'nodePoolList', nodePoolList);
+    },
+
+    removeNodePool(nodeGroup) {
+      let { nodePoolList } = this;
+
+      if (nodePoolList && nodePoolList.length) {
+        nodePoolList.removeObject(nodeGroup);
+      }
+
+      set(this, 'nodePoolList', nodePoolList);
     },
 
     save(cb) {
-      setProperties(this, { 'errors': null });
+      const errors = this.validate();
 
-      const errors = get(this, 'errors') || [];
-      const intl = get(this, 'intl');
-      const requiredCluster = ['name']
-      const nameErrors = this.validateFields(errors, requiredCluster, 'cluster')
-      const eipSelection = get(this, 'eipSelection');
-      const nodeCount = parseInt(get(this, 'config.nodeCount'));
-
-      if(get(this, 'primaryResource.name') && get(this, 'primaryResource.name.length') < 4){
-        errors.pushObject(intl.t('clusterNew.huaweicce.name.minLengthError'))
-      }
-
-      if (eipSelection === 'exist' && get(this, 'config.eipIds').length !== nodeCount) {
-        errors.pushObject(intl.t('clusterNew.huaweicce.eipIds.countError'))
-      }
-
-      if (eipSelection === 'new' && parseInt(get(this, 'config.eipCount')) !== nodeCount) {
-        errors.pushObject(intl.t('clusterNew.huaweicce.eipIds.countError'))
-      }
-
-      if (errors.length > 0 || nameErrors.length > 0) {
+      if (errors.length > 0) {
         set(this, 'errors', errors);
         cb();
 
         return;
       }
 
-      set(this, 'cluster.%%DRIVERNAME%%EngineConfig', get(this, 'config'));
+      const intl = get(this, 'intl');
+
+
+      
+      const config = this.formatConfig();
+
+      set(this, 'cluster.cceConfig', config);
 
       this.send('driverSave', cb);
     },
@@ -452,6 +491,28 @@ export default Ember.Component.extend(ClusterDriver, {
       // probably should not remove this as its what every other driver uses to get back
       get(this, 'router').transitionTo('global-admin.clusters.index');
     },
+
+    // nodePool choices config change
+    availableZoneChange(nodePool) {
+      const flavorChoicesByZones = get(this, 'flavorChoicesByZones');
+      const volumeTypeChoicesByZones = get(this, 'volumeTypeChoicesByZones');
+      const zoneID = get(nodePool, 'availableZone');
+      const flavorChoices = flavorChoicesByZones[zoneID] || [];
+      const volumeTypeChoices = volumeTypeChoicesByZones[zoneID] || [];
+
+      set(nodePool, 'flavorChoices', flavorChoices);
+      set(nodePool, 'flavor', this.getDefaultSelected(flavorChoices, 'c7.large.2'));
+      set(nodePool, 'volumeTypeChoices', volumeTypeChoices);
+      set(nodePool, 'volumeType', this.getDefaultSelected(volumeTypeChoices));
+      set(nodePool, 'rootVolumeType', this.getDefaultSelected(volumeTypeChoices));
+
+    },
+    billingModeChange(nodePool, billingMode){
+      if(get(billingMode, 'value') === 1){
+        set(nodePool, 'validityPeriod', this.getDefaultSelected(get(this, 'validityPeriodChoices')));
+        set(nodePool, 'bmsIsAutoRenew', 'false');
+      }
+    }
   },
 
   languageDidChanged: observer('intl.locale', function() {
@@ -461,6 +522,80 @@ export default Ember.Component.extend(ClusterDriver, {
     }
 
   }),
+
+  initConfig(config){
+    const nodePoolList = [];
+    const nodePools = get(this, 'config.nodePools') || [];
+
+    nodePools.forEach(nodePool=>{
+      const {flavor, availableZone, operatingSystem, sshKey, rootVolume, dataVolumes, billingMode, runtime} = get(nodePool, 'nodeTemplate');
+      const out = {
+        nodePoolName: nodePool.name,
+        initialNodeCount: nodePool.initialNodeCount,
+        // nodeTemplate
+        flavor,
+        availableZone,
+        operatingSystem,
+        sshKey,
+        rootVolumeSize: rootVolume.size,
+        rootVolumeType: rootVolume.type,
+        dataVolumeSize: dataVolumes[0].size,
+        dataVolumeType: dataVolumes[0].type,
+        billingMode,
+        runtime,
+      }
+
+      if(nodePool.nodePoolID){
+        out.nodePoolID = nodePool.nodePoolID;
+      }
+
+      let displayShowValue = {};
+
+      nodePoolList.push(Object.assign(out, displayShowValue));
+    });
+
+    const { containerNetwork, version, hostNetwork, kubernetesSvcIPRange, description, authentication, tags, clusterID, publicIP, kubeProxyMode } = get(this, 'config');
+
+    const out = {
+      containerNetworkCidr: containerNetwork.cidr,
+      containerNetworkMode: containerNetwork.mode,
+      version,
+      vpcId: hostNetwork.vpcID,
+      subnetId: hostNetwork.subnetID,
+      securityGroup: hostNetwork.securityGroup,
+      kubernetesSvcIPRange,
+      description,
+      authentiactionMode: authentication.mode,
+      tags,
+      taglength: Object.keys(tags || {}).length,
+      clusterID,
+      kubeProxyMode,
+    };
+
+    if(get(config, 'publicAccess')){
+      if(get(config, 'publicIP.eip.ipType')){
+        set(this, 'eipSelection', 'new')
+        out.eipBandwidthSize = get(publicIP, 'eip.bandwidth.size');
+        out.eipChargeMode = get(publicIP, 'eip.bandwidth.chargeMode');
+        out.eipType = get(publicIP, 'eip.ipType');
+      } else if (get(config, 'extendParam.clusterExternalIP') || get(this, 'cluster.cceStatus.clusterExternalIP')) {
+        set(this, 'eipSelection', 'exist')
+      }
+    } else {
+      set(this, 'eipSelection', 'none')
+    }
+
+    if(authentication.mode === 'authenticating_proxy'){
+      const {ca, cert, privateKey} = get(authentication, 'authenticatingProxy') || {};
+
+      out.authenticatingProxyCa = AWS.util.base64.decode(ca);
+      out.authenticatingProxyCert = AWS.util.base64.decode(cert);
+      out.authenticatingProxyPrivateKey = AWS.util.base64.decode(privateKey);
+    }
+
+    set(this, 'nodePoolList', nodePoolList);
+    set(this, 'config', out);
+  },
 
   loadLanguage(lang) {
     const translation = languages[lang] || languages['en-us'];
@@ -479,7 +614,6 @@ export default Ember.Component.extend(ClusterDriver, {
       set(this, 'lanChanged', +new Date());
     });
   },
-  // Any computed properties or custom logic can go here
   vpcIdChange: observer('config.vpcId', function() {
     this.getSubnet();
     const vpcId = get(this, 'config.vpcId')
@@ -487,46 +621,87 @@ export default Ember.Component.extend(ClusterDriver, {
 
     const filter = subnets.filter((s) => s.vpc_id === vpcId)
 
-    set(this, 'config.subnetId', filter[0] && filter[0].id || null)
+    set(this, 'config.subnetId', '')
   }),
 
   eipSelectionChange: observer('eipSelection', function() {
-    const eipSelection = get(this, 'eipSelection')
-
-    if (eipSelection === 'none') {
-      setProperties(this, {
-        'config.eipIds':           [],
-        'config.eipCount':         null,
-        'config.eipType':          null,
-        'config.eipShareType':     null,
-        'config.eipChargeMode':    null,
-        'config.eipBandwidthSize': null,
-      })
-    }
-    if (eipSelection === 'exist') {
-      setProperties(this, {
-        'config.eipCount':         null,
-        'config.eipType':          null,
-        'config.eipShareType':     null,
-        'config.eipChargeMode':    null,
-        'config.eipBandwidthSize': null,
-      })
-    }
+    const eipSelection = get(this, 'eipSelection');
+    const eipChoices = get(this, 'eipChoices');
+    
     if (eipSelection === 'new') {
       setProperties(this, {
-        'config.eipIds':           [],
-        'config.eipCount':         1,
         'config.eipType':          '5_bgp',
         'config.eipBandwidthSize': 1,
         'config.eipShareType':     'PER',
       })
+    } else if (eipSelection === 'exist'){
+      setProperties(this, {
+        'config.clusterExternalIP':    this.getDefaultSelected(eipChoices),
+      })
     }
+  }),
+
+  managementScaleObserver: observer('managementScaleNum', function() {
+    const { managementScaleNum } = this;
+
+    if(managementScaleNum > 200){
+      set(this, 'highAvailabilityEnabled', 's2');
+    }
+  }),
+
+  // Any computed properties or custom logic can go here
+  isActive: computed('cluster', function() {
+    return get(this, 'cluster.isActive');
+  }),
+  isImportProvider: computed('router.currentRoute.queryParams', 'config.imported', function() {
+    const { router } = this;
+    const imported = get(this, 'config.imported');
+
+    return imported || get(router, 'currentRoute.queryParams.importProvider') === 'cce';
+  }),
+
+  cloudCredentials: computed('model.cloudCredentials', function() {
+    const { model: { cloudCredentials } } = this;
+
+    return cloudCredentials.filter((cc) => get(cc, 'huaweicredentialConfig'));
+  }),
+  selectedCloudCredential: computed('primaryResource.cloudCredentialId', 'model.cloudCredentials.length', 'config.regionID', function() {
+    const cloudCredential = get(this, 'model.cloudCredentials').findBy('id', get(this, 'primaryResource.cloudCredentialId'));
+
+    if( !cloudCredential ){
+      return {};
+    }
+
+    const intl = get(this, 'intl');
+    const regionId = get(cloudCredential, 'huaweicredentialConfig.regionID') || get(this, 'config.regionID') || '';
+    cloudCredential.regionName = intl.t(`clusterNew.huaweicce.region.${regionId.replace(/\-/g, '_')}`);
+    cloudCredential.regionID = regionId;
+
+    return cloudCredential;
+  }),
+
+  nodePoolActive: computed('nodePoolList.@each.{nodePoolID,nodePoolList}', function() {
+    const list = get(this, 'nodePoolList') || [];
+
+    return list.every((item) => {
+      return item.nodePoolID;
+    })
+  }),
+
+  managementScaleNum: computed('managementScale', function() {
+    const { managementScale, managementScaleChoices } = this;
+
+    const option = managementScaleChoices.findBy('value', managementScale);
+
+
+    return get(managementScaleChoices.findBy('value', managementScale), 'label');
   }),
 
   clusterFlavorObserver: observer('managementScale', 'highAvailabilityEnabled', function() {
     const { managementScale, highAvailabilityEnabled } = this;
 
     set(this, 'config.clusterFlavor', `cce.${ highAvailabilityEnabled }.${ managementScale }`)
+    // cce.s2.small
   }),
 
   validityPeriodChange: observer('validityPeriod', function() {
@@ -557,7 +732,7 @@ export default Ember.Component.extend(ClusterDriver, {
         'config.bmsIsAutoRenew': null,
       })
     }
-    if (billingMode === 2) {
+    if (billingMode === 1) {
       setProperties(this, {
         'config.bmsIsAutoRenew': 'false',
         'validityPeriod':        '1 month',
@@ -565,38 +740,25 @@ export default Ember.Component.extend(ClusterDriver, {
     }
   }),
 
-  availableZoneChange: observer('config.availableZone', async function() {
-    try {
-      await this.listCloudServerFlavors();
-    } catch (err) {
-      const errors = get(this, 'errors') || [];
-
-      errors.pushObject(err.message || err);
-      set(this, 'errors', errors);
-
-      return;
-    }
+  containerNetworkModeChoicesChange: observer('containerNetworkModeChoices.[]', function() {
+    set(this, 'config.containerNetworkMode', get(this, 'containerNetworkModeChoices.firstObject.value'))
   }),
 
-  containerNetworkModeContentChange: observer('containerNetworkModeContent.[]', function() {
-    set(this, 'config.containerNetworkMode', get(this, 'containerNetworkModeContent.firstObject.value'))
-  }),
-
-  eipIdContentChange: observer('eipIdContent.@each.active', function() {
+  eipIdChoicesChange: observer('eipIdChoices.@each.active', function() {
     set(this, 'config.eipIds', []);
-    get(this, 'eipIdContent').forEach((item) => {
+    get(this, 'eipIdChoices').forEach((item) => {
       if (item.active) {
         get(this, 'config.eipIds').pushObject(get(item, 'value'))
       }
     })
   }),
 
-  nodeOperationSystemContent: computed('config.masterVersion', function() {
+  operatingSystemChoices: computed('config.version', function() {
     const types = ['EulerOS 2.9', 'CentOS 7.6', 'EulerOS 2.5'];
     const containerNetworkMode = get(this, 'config.containerNetworkMode');
 
     if(containerNetworkMode !== 'overlay_l2'){
-      types.push('Ubuntu 18.04');
+      types.push('Huawei Cloud EulerOS 2.0', 'Ubuntu 22.04', 'Ubuntu 18.04');
     }
 
     return types.map(item=>({
@@ -604,87 +766,88 @@ export default Ember.Component.extend(ClusterDriver, {
       value: item
     }))
   }),
-  containerNetworkModeContent: computed('config.clusterType', function() {
-    const choices     = CONTAINER_NETWORK_MODES;
-    const clusterType = get(this, 'config.clusterType');
 
-    return choices.filter((choice) => choice.bare === (clusterType === 'BareMetal'))
+  securityGroupShowValue: computed('securityGroupChoices.[]', 'config.securityGroup', 'intl.locale', function() {
+    return this.configNameDisplay(get(this, 'config.securityGroup'), get(this, 'securityGroupChoices'));
+  }),
+  vpcShowValue: computed('vpcChoices.[]', 'config.vpcId', 'intl.locale', function() {
+    return this.configNameDisplay(get(this, 'config.vpcId'), get(this, 'vpcChoices'));
+  }),
+  subnetShowValue: computed('subnetChoices.[]', 'config.subnetId', 'intl.locale', function() {
+    return this.configNameDisplay(get(this, 'config.subnetId'), get(this, 'subnetChoices'));
+  }),
+  eipSelectionShowValue: computed('eipSelection', 'intl.locale', function() {
+    const eipSelection = get(this, 'eipSelection');
+    return get(this, 'intl').t(`clusterNew.huaweicce.eipSelection.${eipSelection}`)
+  }),
+  clusterEipShowValue: computed('config.clusterExternalIP', 'cluster.cceStatus.clusterExternalIP', function() {
+    return get(this, 'config.clusterExternalIP') || get(this, 'cluster.cceStatus.clusterExternalIP');
+  }),
+  eipTypeShowValue: computed('eipSelection', 'eipTypeChoices.[]', 'config.eipType', 'intl.locale', function() {
+    return this.configNameDisplay(get(this, 'config.eipType'), get(this, 'eipTypeChoices'), true);
+  }),
+  eipChargeModeShowValue: computed('eipSelection', 'eipChargeModeChoices.[]', 'config.eipChargeMode', 'intl.locale', function() {
+    return this.configNameDisplay(get(this, 'config.eipChargeMode'), get(this, 'eipChargeModeChoices'), true);
+  }),
+  authentiactionModeShowValue: computed('config.authentiactionMode', 'intl.locale', function() {
+    const authentiactionMode = get(this, 'config.authentiactionMode');
+    return get(this, 'intl').t(`clusterNew.huaweicce.authentiactionMode.${authentiactionMode}`)
   }),
 
-  rootVolumeTypeShowValue: computed('config.rootVolumeType', 'intl.locale', function() {
-    return this.displayField('rootVolumeType', get(this, 'volumeTypeContent'));
-  }),
-  dataVolumeTypeShowValue: computed('config.dataVolumeType', 'intl.locale', function() {
-    return this.displayField('dataVolumeType', get(this, 'volumeTypeContent'));
-  }),
 
-  regionShowValue: computed('config.region', 'intl.locale', function() {
-    return this.displayField('region', get(this, 'zones'));
-  }),
-  availableZoneShowValue: computed('config.availableZone', 'intl.locale', function() {
-    return this.displayField('availableZone');
-  }),
-
-  containerNetworkModeShowValue: computed('containerNetworkModeContent.[]', 'config.containerNetworkMode', 'intl.locale', function() {
+  containerNetworkModeShowValue: computed('containerNetworkModeChoices.[]', 'config.containerNetworkMode', 'intl.locale', function() {
     const intl    = get(this, 'intl');
-    const choices = get(this, 'containerNetworkModeContent');
+    const choices = get(this, 'containerNetworkModeChoices');
     const current = get(this, 'config.containerNetworkMode');
 
     return intl.t(get(choices.findBy('value', current), 'label'));
   }),
 
-  managementScaleContent: computed('config.clusterType', function() {
-    const clusterType = get(this, 'config.clusterType')
-
-    if (clusterType === 'BareMetal') {
-      return MANAGEMENT_SCALE_BAREMETAL
-    }
-
-    return MANAGEMENT_SCALE_VIRTUAL
-  }),
-
-  managementScaleShowValue: computed('config.clusterType', 'managementScale', function() {
-    const clusterType = get(this, 'config.clusterType');
+  managementScaleShowValue: computed('managementScale', function() {
     let choices       = MANAGEMENT_SCALE_VIRTUAL;
     const current     = get(this, 'managementScale');
 
-    if (clusterType === 'BareMetal') {
-      choices = MANAGEMENT_SCALE_BAREMETAL
-    }
     return get(choices.findBy('value', current), 'label');
   }),
 
-  vpcContent: computed('vpcs.[]', function() {
+  vpcChoices: computed('vpcs.[]', function() {
     const vpcs = get(this, 'vpcs') || []
+    const intl = get(this, 'intl');
 
-    return vpcs.map((v) => {
-      return {
+    return vpcs.reduce((prev, v)=>{
+      prev.push({
         label: v.name,
         value: v.id
-      }
-    })
+      });
+
+      return prev;
+    },[{
+      label: intl.t('clusterNew.huaweicce.vpcId.default'),
+      value: '',
+    }])
   }),
 
-  editedVpcName: computed('config.vpcId', function() {
-    const vpcId = get(this, 'config.vpcId')
-    const vpcs = get(this, 'vpcs') || []
-    const filter = vpcs.filter((v) => v.id === vpcId)[0] || {}
-
-    return filter.name
-  }),
-
-  subnetContent: computed('config.vpcId', 'subnets.[]', function() {
+  subnetChoices: computed('config.vpcId', 'subnets.[]', function() {
     const subnets = get(this, 'subnets') || []
-    const vpcId = get(this, 'config.vpcId')
-    const filter = subnets.filter((s) => s.vpc_id === vpcId).map((s) => ({
-      label: s.name,
-      value: s.id,
-    }))
+    const vpcId = get(this, 'config.vpcId');
+    const intl = get(this, 'intl');
 
-    return filter
+    return subnets.reduce((prev, s)=>{
+      if(s.vpc_id === vpcId){
+        prev.push({
+          label: s.name,
+          value: s.id,
+        });
+      }
+
+      return prev;
+    }, [{
+      label: intl.t('clusterNew.huaweicce.subnetId.default'),
+      value: '',
+    }]);
   }),
 
-  vipSubnetContent: computed('vipSubnets.[]', function() {
+  vipSubnetChoices: computed('vipSubnets.[]', function() {
     const vipSubnets = get(this, 'vipSubnets') || []
     const filter = vipSubnets.map((s) => ({
       label: s.name,
@@ -694,23 +857,7 @@ export default Ember.Component.extend(ClusterDriver, {
     return filter
   }),
 
-  editedSubnetName: computed('config.subnetId', function() {
-    const subnetId = get(this, 'config.subnetId')
-    const subnets = get(this, 'subnets') || []
-    const filter = subnets.filter((s) => s.id === subnetId)[0] || {}
-
-    return filter.name
-  }),
-
-  editedVipSubnetName: computed('config.vipSubnetId', function() {
-    const subnetId = get(this, 'config.vipSubnetId')
-    const vipSubnets = get(this, 'vipSubnets') || []
-    const filter = vipSubnets.filter((s) => s.neutron_subnet_id === subnetId)[0] || {}
-
-    return filter.name
-  }),
-
-  eipIdContent: computed('eipIds.[]', 'config.{externalServerEnabled}', function() {
+  eipIdChoices: computed('eipIds.[]', 'config.{externalServerEnabled}', function() {
     const eipIds = get(this, 'eipIds') || [];
 
     return eipIds.filter((e) => e.status === 'DOWN').map((e) => ({
@@ -719,70 +866,275 @@ export default Ember.Component.extend(ClusterDriver, {
     }))
   }),
 
-  nodeFlavorContent: computed('nodeFlavors.[]', function() {
-    const nodeFlavors = get(this, 'nodeFlavors') || []
+  initialNodeCountMax: computed('config.clusterFlavor', function() {
+    const clusterFlavor = get(this, 'config.clusterFlavor') || ''
 
-    return nodeFlavors.filter((n) => {
-      const az   = get(this, 'config.availableZone');
-      let statusString = get(n, 'os_extra_specs.cond:operation:az')
-      let statusSubString = '';
+    if (clusterFlavor.endsWith('small')) {
+      return 50
+    }
+    if (clusterFlavor.endsWith('medium')) {
+      return 200
+    }
+    if (clusterFlavor.endsWith('large')) {
+      return 1000
+    }
+    if (clusterFlavor.endsWith('xlarge')) {
+      return 1000
+    }
 
-      if (statusString === undefined) {
-        return true
-      }
+    return 50;
+  }),
 
-      statusSubString = statusString.split(',').find(item => item.indexOf(az) !== -1)
+  managementScaleDisplay: computed('managementScale', function() {
+    const managementScale = get(this, 'managementScale')
+    const managementScaleChoices = get(this, 'managementScaleChoices') || []
+    const filter = managementScaleChoices.filter((m) => m.value === managementScale)[0] || {}
 
-      if (statusSubString === undefined) {
-        return true
-      }
+    return filter.label
+  }),
 
-      statusSubString = statusSubString.match(/\([a-z]+\)/)
+  validityPeriodName: computed('config.bmsPeriodNum', 'config.bmsPeriodType', function() {
+    const { bmsPeriodNum, bmsPeriodType } = get(this, 'config');
 
-      return !(statusSubString === '(abandon)' || statusSubString === '(sellout)');
-    }).map((n) => {
-      return {
-        label: `${ n.name } ( vCPUs: ${ n.vcpus }, memory: ${ n.ram / 1024 } GB )`,
-        value: n.name
-      }
+    return `${ bmsPeriodNum } ${ bmsPeriodType }`
+  }),
+
+  bmsIsAutoRenewName: computed('config.bmsIsAutoRenew', function() {
+    return get(this, 'config.bmsIsAutoRenew') === 'true' ? 'Enabled' : 'Disabled'
+  }),
+
+  kubernetesVersionNotRecommend: computed('intl.locale', 'config.version', function() {
+    const kubernetesVersion = get(this, 'config.version');
+    const versionChoices = get(this, 'versionChoices') || [];
+
+    return versionChoices.find(v=>{
+      return v.value === kubernetesVersion && v.notRecommend
+    })
+  }),
+  kubernetesVersionDisabeldRancher: computed('intl.locale', 'config.version', function() {
+    const kubernetesVersion = get(this, 'config.version');
+    const versionChoices = get(this, 'versionChoices') || [];
+
+    return versionChoices.find(v=>{
+      return v.value === kubernetesVersion && !v.rancherEnabled
     })
   }),
 
-  availableZoneContent: computed('availableZones.[]', function() {
+  validateFields(errors = [], requiredFields = [], parent = null) {
     const intl = get(this, 'intl');
-    const zones = get(this, 'availableZones') || [];
-    const region = get(this, 'config.region');
-    const out = [];
 
-    zones.forEach(obj=>{
-      const id = get(obj, 'zoneName') || '';
+    if (parent) {
+      const parentVal = get(this, parent);
 
-      if(get(obj, 'zoneState.available') && id.startsWith(region)) {
-
-        const num = id.substr(region.length,1).charCodeAt() - 96;
-
-        out.push({
-          label: intl.t('clusterNew.huaweicce.availableZone.value', {num}),
-          value: id
+      if(parentVal && Array.isArray(parentVal)){
+        parentVal.forEach(p => {
+          requiredFields.map((item) => {
+            if (!get(p, `${ item }`)) {
+              errors.pushObject(`"${ intl.t(`clusterNew.huaweicce.${ item }.label`) }" ${ intl.t(`clusterNew.huaweicce.generic.isRequired`) }`);
+            }
+          })
         });
+
+        return errors;
       }
+      requiredFields.map((item) => {
+        if (!get(this, `${ parent }.${ item }`)) {
+          errors.pushObject(`"${ intl.t(`clusterNew.huaweicce.${ item }.label`) }" ${ intl.t(`clusterNew.huaweicce.generic.isRequired`) }`);
+        }
+      })
+    } else {
+      requiredFields.map((item) => {
+        if (!get(this, `${ item }`)) {
+          errors.pushObject(`"${ intl.t(`clusterNew.huaweicce.${ item }.label`) }" ${ intl.t(`clusterNew.huaweicce.generic.isRequired`) }`);
+        }
+      })
+    }
+
+    return errors
+  },
+
+  configNameDisplay(val, choices, localizedLabel){
+    if(val === null || val === undefined || !choices){
+      return 'n/a'
+    }
+
+    const selected = choices.findBy('value', val) || {};
+    const label = get(selected, 'label');
+
+    if(localizedLabel && label){
+      const intl = get(this, 'intl');
+
+      return intl.t(label)
+    }
+
+    return label || 'n/a';
+  },
+
+  // fetch API
+  fetchClusters() {
+    return this.queryFromHuawei('clusters', {regionID: get(this, 'config.regionID')}).then((res) => {
+      const out = [];
+
+      res.forEach(c=>{
+        out.push({
+          label: c.metadata.name,
+          value: c.metadata.uid
+        });
+      });
+
+      set(this, 'clusterChoices', out);
+      this.setDefaultSelected(out, 'config.clusterId')
+    }).catch((err)=>{
+      set(this, 'clusterChoices', []);
     });
+  },
+  fetchFlavors(nodePool) {
+    return this.queryFromHuawei('flavors').then(res => {
+      const flavorChoicesByZones = {};
+      res.forEach(flavor=>{
+        const spec_az = get(flavor, 'os_extra_specs.cond:operation:az') || '';
 
-    return out;
-  }),
+        spec_az.split(',').forEach(az=>{
+          if(az.includes('(normal)')){
+            const zone = az.substr(0, az.length-8);
 
-  sshkeyContent: computed('keypairs.[]', function() {
-    const keypairs = get(this, 'keypairs') || [];
+            flavorChoicesByZones[zone] = flavorChoicesByZones[zone] || [];
+            flavorChoicesByZones[zone].push({
+              label: `${ flavor.name } ( vCPUs: ${ flavor.vcpus }, memory: ${ flavor.ram / 1024 } GB )`,
+              value: flavor.name,
+              group: flavor.name.split('.')[0]
+            })
+          }
+        });
+      });
 
-    return keypairs.map((k) => {
-      return {
-        label: k.keypair.name,
-        value: k.keypair.name
-      }
+      set(this, 'flavorChoicesByZones', flavorChoicesByZones);
+      this.send('availableZoneChange', nodePool)
     })
-  }),
+  },
+  fetchAvailableZones() {
+    const intl = get(this, 'intl');
 
-  volumeTypeContent: computed('volumeTypes.[]', 'config.availableZone', function() {
+    return this.queryFromHuawei('osAvailabilityZone').then((res) => {
+      const availableZoneChoices = res.reduce((prev,zone)=>{
+        if(get(zone, 'zoneState.available')){
+          const id = get(zone, 'zoneName') || '';
+          const selectedCloudCredential = get(this, 'selectedCloudCredential');
+          const regionId = get(selectedCloudCredential, 'regionID');
+
+          if(id.startsWith(regionId)) {
+            const num = id.substr(regionId.length,1).charCodeAt() - 96;
+    
+            prev.push({
+              label: intl.t('clusterNew.huaweicce.availableZone.value', {num}),
+              value: id
+            })
+          } else {
+            prev.push({
+              label:      get(zone, 'zoneName'),
+              value:      get(zone, 'zoneName'),
+            })
+          }
+        }
+
+        return prev;
+      },[]);
+
+      // availableZoneChoices.push({
+      //   label: intl.t('clusterNew.huaweicce.availableZone.random'),
+      //   value: 'random'
+      // });
+
+      set(this, 'availableZoneChoices', availableZoneChoices);
+    });
+  },
+  fetchSecurityGroups() {
+    const intl = get(this, 'intl');
+    return this.queryFromHuawei('securityGroups').then((res) => {
+      const securityGroupChoices = res.map((item) => {
+        return {
+          label: get(item, 'name'),
+          value: get(item, 'id')
+        };
+      });
+
+      securityGroupChoices.unshift({
+          label: intl.t('clusterNew.huaweicce.securityGroup.default'),
+          value: '',
+      })
+
+      set(this, 'securityGroupChoices', securityGroupChoices);
+    });
+  },
+  fetchVolumeTypes(){
+    const volumeTypeChoicesByZones = {};
+    const types = ['SSD', 'SAS', 'SATA']; // todo
+    return this.queryFromHuawei('volumeTypes').then(res => {
+      const out = [];
+
+
+      res.forEach(volumeType=>{
+        let availableZones = [];
+        const availability = get(volumeType, 'extra_specs.RESKEY:availability_zones');
+
+        if(!availability || !types.includes(volumeType.name)){
+          return;
+        }
+
+        const availabilityArr = availability.split(',');
+        const soldOut = get(volumeType, 'extra_specs.os-vendor-extended:sold_out_availability_zones');
+
+        if(!soldOut){
+          availableZones = availabilityArr;
+        } else {
+          const soldOutArr = get(volumeType, 'extra_specs.os-vendor-extended:sold_out_availability_zones').split(',');
+          availableZones = availabilityArr.filter(item => !soldOutArr.includes(item));
+        }
+
+        availableZones.reduce((prev, availableZone)=>{
+          prev[availableZone] = prev[availableZone] || [];
+          prev[availableZone].push({
+            label: `clusterNew.huaweicce.volumetype.${volumeType.name}`,
+            value: volumeType.name,
+          });
+
+          return prev;
+        }, volumeTypeChoicesByZones)
+      })
+
+      set(this, 'volumeTypeChoicesByZones', volumeTypeChoicesByZones);
+    })
+  },
+  fetchKeypairs() {
+    return this.queryFromHuawei('osKeypairs').then(res => {
+      const sshKeyChoices = res.map(sshKey=>{
+        return {
+          label: get(sshKey, 'keypair.name'),
+          value: get(sshKey, 'keypair.name'),
+        }
+      })
+
+      set(this, 'sshKeyChoices', sshKeyChoices);
+    })
+  },
+  fetchEips() {
+    return this.queryFromHuawei('listPublicIPs').then(res => {
+      const eipChoices = res.reduce((prev, eip)=>{
+        if(eip.status === 'DOWN'){
+          prev.push({
+            label: `${get(eip, 'public_ip_address')}(${get(eip, 'type')}) `,
+            value: get(eip, 'public_ip_address'),
+          });
+        }
+        
+        return prev;
+      }, []);
+
+      set(this, 'eipChoices', eipChoices);
+    })
+  },
+
+  volumeTypeChoices: computed('volumeTypes.[]', 'config.availableZone', function() {
     const out = [];
     const volumeTypes = get(this, 'volumeTypes') || [];
     const zone = get(this, 'config.availableZone') || '';
@@ -804,147 +1156,27 @@ export default Ember.Component.extend(ClusterDriver, {
     return out;
   }),
 
-  editedSshName: computed('config.sshKey', function() {
-    const sshKey = get(this, 'config.sshKey')
-    const keypairs = get(this, 'keypairs') || [];
-    const filter = keypairs.filter((k) => k.keypair.name === sshKey)[0] || {}
-
-    return filter.keypair && filter.keypair.name || ''
-  }),
-
-  nodeCountMax: computed('config.clusterFlavor', function() {
-    const clusterFlavor = get(this, 'config.clusterFlavor') || ''
-
-    if (clusterFlavor.endsWith('small')) {
-      return 50
-    }
-    if (clusterFlavor.endsWith('medium')) {
-      return 200
-    }
-
-    return 1000
-  }),
-
-  managementScaleDisplay: computed('managementScale', function() {
-    const managementScale = get(this, 'managementScale')
-    const managementScaleContent = get(this, 'managementScaleContent') || []
-    const filter = managementScaleContent.filter((m) => m.value === managementScale)[0] || {}
-
-    return filter.label
-  }),
-
-  billingModeName: computed('config.billingMode', function() {
-    const billingMode = get(this, 'config.billingMode')
-    const intl = get(this, 'intl')
-
-    return billingMode === 0 ? intl.t('clusterNew.huaweicce.billingMode.payPerUse') : intl.t('clusterNew.huaweicce.billingMode.yearly')
-  }),
-
-  billingModeContent: computed('config.clusterType', function() {
-    const clusterType = get(this, 'config.clusterType')
-    const intl = get(this, 'intl')
-
-    if (clusterType === 'VirtualMachine') {
-      return [
-        {
-          label: intl.t('clusterNew.huaweicce.billingMode.payPerUse'),
-          value: 0,
-        }]
-    } else {
-      return [
-        {
-          label: intl.t('clusterNew.huaweicce.billingMode.payPerUse'),
-          value: 0,
-        }, {
-          label: intl.t('clusterNew.huaweicce.billingMode.yearly'),
-          value: 2,
-        }]
-    }
-  }),
-
-  validityPeriodName: computed('config.bmsPeriodNum', 'config.bmsPeriodType', function() {
-    const { bmsPeriodNum, bmsPeriodType } = get(this, 'config');
-
-    return `${ bmsPeriodNum } ${ bmsPeriodType }`
-  }),
-
-  bmsIsAutoRenewName: computed('config.bmsIsAutoRenew', function() {
-    return get(this, 'config.bmsIsAutoRenew') === 'true' ? 'Enabled' : 'Disabled'
-  }),
-
-  kubernetesVersionNotRecommend: computed('intl.locale', 'config.masterVersion', function() {
-    const kubernetesVersion = get(this, 'config.masterVersion');
-    const versionChoices = get(this, 'masterVersions') || [];
-
-    return versionChoices.find(v=>{
-      return v.value === kubernetesVersion && v.notRecommend
-    })
-  }),
-  kubernetesVersionDisabeldRancher: computed('intl.locale', 'config.masterVersion', function() {
-    const kubernetesVersion = get(this, 'config.masterVersion');
-    const versionChoices = get(this, 'masterVersions') || [];
-
-    return versionChoices.find(v=>{
-      return v.value === kubernetesVersion && !v.rancherEnabled
-    })
-  }),
-
-  validateFields(errors = [], requiredFields = [], parent = null) {
-    const intl = get(this, 'intl')
-
-    if (parent) {
-      requiredFields.map((item) => {
-        if (!get(this, `${ parent }.${ item }`)) {
-          errors.pushObject(`"${ intl.t(`clusterNew.huaweicce.${ item }.label`) }" ${ intl.t(`clusterNew.huaweicce.generic.isRequired`) }`);
-        }
-      })
-    } else {
-      requiredFields.map((item) => {
-        if (!get(this, `${ item }`)) {
-          errors.pushObject(`"${ intl.t(`clusterNew.huaweicce.${ item }.label`) }" ${ intl.t(`clusterNew.huaweicce.generic.isRequired`) }`);
-        }
-      })
-    }
-
-    return errors
-  },
-
-  willSave() {
-    if (get(this, 'mode') === 'new') {
-      const authenticatingProxyCa = get(this, 'authenticatingProxyCa') || ''
-
-      if (get(this, 'config.authentiactionMode') === 'authenticating_proxy') {
-        set(this, 'config.authenticatingProxyCa', AWS.util.base64.encode(authenticatingProxyCa))
-      } else {
-        set(this, 'config.authenticatingProxyCa', null)
-      }
-    }
-
-    return this._super(...arguments);
-  },
-
   getVpcs() {
     set(this, 'vpcs', []);
     set(this, 'vpcId', null);
 
-    return this.fetchResoures('vpcs').then((res) => {
+    return this.queryFromHuawei('vpcs').then((res) => {
       set(this, 'vpcs', res)
 
       if (get(this, 'mode') === 'new') {
-        set(this, 'config.vpcId', res[0] && res[0].id || null)
+        set(this, 'config.vpcId', '')
       }
 
       return res;
     })
-
   },
 
   getSubnet() {
-    return this.fetchResoures('subnets', {vpcID: get(this, 'config.vpcId') || undefined}).then(res => {
+    return this.queryFromHuawei('subnets', {vpcID: get(this, 'config.vpcId') || undefined}).then(res => {
       set(this, 'subnets', res)
 
       if (get(this, 'mode') === 'new') {
-        set(this, 'config.subnetId', res[0] && res[0].id || null)
+        set(this, 'config.subnetId', '')
       }
 
       return res;
@@ -952,15 +1184,15 @@ export default Ember.Component.extend(ClusterDriver, {
   },
 
   getVipSubnet() {
-    return this.fetchResoures('subnets').then(res => {
+    return this.queryFromHuawei('subnets').then(res => {
       const subnets = res || [];
 
       set(this, 'subnets', subnets)
       set(this, 'vipSubnets', subnets)
 
       if (get(this, 'mode') === 'new') {
-        set(this, 'config.subnetId', subnets[0] && subnets[0].id || null)
-        set(this, 'config.vipSubnetId', subnets[0] && subnets[0].id || null)
+        set(this, 'config.subnetId', '')
+        set(this, 'config.vipSubnetId', '')
       }
 
       return res;
@@ -968,97 +1200,220 @@ export default Ember.Component.extend(ClusterDriver, {
   },
 
   getEipIds() {
-    return this.fetchResoures('listPublicIPs').then( res => {
+    return this.queryFromHuawei('listPublicIPs').then( res => {
       set(this, 'eipIds', res);
 
       return res
     })
   },
 
-  getVolumeTypes() {
-    const types = ['SSD', 'SAS', 'SATA'];
-    return this.fetchResoures('volumeTypes').then(res => {
-      const out = [];
+  getDefaultSelected(choices, specifyVal){
+    if(!choices || !choices.length){
+      return null;
+    }
 
+    if(specifyVal){
+      const selected = choices.findBy('value', specifyVal);
 
-      res.forEach(obj=>{
-        let availabilityZones = [];
-        const availability = get(obj, 'extra_specs.RESKEY:availability_zones');
+      if(selected){
+        return specifyVal;
+      }
+    }
 
-        if(!availability || !types.includes(obj.name)){
-          return;
+    return get(choices, 'firstObject.value');
+  },
+
+  setDefaultSelected(choices, target, specifyVal){
+    if(!get(this, 'isNew')){
+      return
+    }
+
+    if(!specifyVal){
+      specifyVal = get(this, target);
+    }
+    const selectedVal = this.getDefaultSelected(choices, specifyVal);
+
+    set(this, target, selectedVal);
+
+    return selectedVal;
+  },
+
+  setNodePoollNameDisplay(choices, key){  // todo
+    const nodePoolList = get(this, 'nodePoolList') || [];
+
+    nodePoolList.forEach(node=>{
+      node[`display${key.charAt(0).toUpperCase()}${key.slice(1)}`] = this.configNameDisplay(node[key], choices)
+    })
+  },
+
+  formatConfig(){
+    const nodePoolList = [];
+    const {containerNetworkCidr, kubernetesSvcIPRange, containerNetworkMode, version, clusterFlavor, vpcId, subnetId, description, tags, authentiactionMode, eipType, eipChargeMode, eipBandwidthSize, securityGroup, clusterExternalIP, kubeProxyMode} = get(this, 'config');
+    const { eipSelection } = this;
+
+    get(this, 'nodePoolList').forEach(nodePool=>{
+      const out = {
+        name: nodePool.nodePoolName,
+        type: 'vm',
+        initialNodeCount: nodePool.initialNodeCount,
+        nodeTemplate: {
+          flavor: nodePool.flavor,
+          availableZone: nodePool.availableZone,
+          operatingSystem: nodePool.operatingSystem,
+          sshKey: nodePool.sshKey,
+          rootVolume: {
+            size: nodePool.rootVolumeSize,
+            type: nodePool.rootVolumeType,
+          },
+          dataVolumes: [{
+            size: nodePool.dataVolumeSize,
+            type: nodePool.dataVolumeType,
+          }],
+          count: 1,
+          billingMode: nodePool.billingMode,
+          runtime: nodePool.runtime,
+        },
+        customSecurityGroups: [],
+      }
+
+      if(nodePool.nodePoolID){
+        out.nodePoolID = nodePool.nodePoolID;
+      }
+
+      // if(nodePool.securityGroup){
+      //   out.customSecurityGroups = [nodePool.securityGroup]
+      // }
+
+      if(nodePool.billingMode === 1){
+        const validityPeriod = get(nodePool, 'validityPeriod').split(' ');
+        out.nodeTemplate.extendParam = {
+          periodType: validityPeriod[1],
+          periodNum: validityPeriod[0],
+          isAutoRenew: nodePool.bmsIsAutoRenew
         }
+      }
 
-        const availabilityArr = availability.split(',');
-        const soldOut = get(obj, 'extra_specs.os-vendor-extended:sold_out_availability_zones');
+      nodePoolList.push(out);
+    });
 
-        if(!soldOut){
-          availabilityZones = availabilityArr;
-        } else {
-          const soldOutArr = get(obj, 'extra_specs.os-vendor-extended:sold_out_availability_zones').split(',');
-          availabilityZones = availabilityArr.filter(item => !soldOutArr.includes(item));
+    const config =  {
+      name: get(this, 'primaryResource.name'),
+      type: 'VirtualMachine',
+      category: 'CCE',
+      huaweiCredentialSecret: get(this, 'primaryResource.cloudCredentialId'),
+      regionID: get(this, 'selectedCloudCredential.regionID'),
+      imported: false,
+      containerNetwork:{
+        cidr: containerNetworkCidr,
+        mode: containerNetworkMode
+      },
+      version,
+      flavor: clusterFlavor, 
+      hostNetwork: {
+        vpcID: vpcId,
+        subnetID: subnetId,
+        securityGroup,
+      },
+      kubernetesSvcIPRange,
+      description,
+      authentication: {
+        mode: authentiactionMode
+      },
+      tags,
+      publicAccess: eipSelection !== 'none',
+      nodePools: nodePoolList,
+      extendParam: {},
+      kubeProxyMode,
+    }
+
+    if(config.clusterID){
+      out.clusterID = config.clusterID;
+    }
+
+
+    // eip config
+    if(config.publicAccess){
+      if(eipSelection === 'new'){
+        config.publicIP = {
+          createEIP: true,
+          eip:       {
+            ipType:    eipType,
+            bandwidth: {
+              chargeMode: eipChargeMode,
+              size:       eipBandwidthSize,
+              shareType:  'PER'
+            }
+          }
         }
+      } else if(eipSelection === 'exist'){
+        config.extendParam.clusterExternalIP = clusterExternalIP;
+      }
+    }
 
-        availabilityZones && availabilityZones.length && out.push({
-          availabilityZones,
-          name: obj.name
-        });
+    // ca config
+    if(authentiactionMode === 'authenticating_proxy'){
+      const {authenticatingProxyCa, authenticatingProxyCert, authenticatingProxyPrivateKey} = get(this, 'config');
+      set(config, 'authentication.authenticatingProxy', {
+        ca:         AWS.util.base64.encode(authenticatingProxyCa),
+        cert:       AWS.util.base64.encode(authenticatingProxyCert),
+        privateKey: AWS.util.base64.encode(authenticatingProxyPrivateKey),
       })
+    }
 
-      set(this, 'volumeTypes', out);
-
-      return out;
-    })
+    return config;
   },
 
-  listCloudServerFlavors() {
-    return this.fetchResoures('flavors', { zone: get(this, 'config.availableZone') }).then(res => {
-      set(this, 'nodeFlavors', res)
-
-      if (get(this, 'mode') === 'new') {
-        set(this, 'config.nodeFlavor', res[0] && res[0].name || null)
-      }
-
-      return res;
-    })
-  },
-
-  listKeypairs() {
-    return this.fetchResoures('osKeypairs').then(res => {
-      set(this, 'keypairs', res)
-
-      const keypairs = res || []
-
-      set(this, 'config.sshKey', keypairs[0] && keypairs[0].keypair.name)
-    })
-
-    return res;
-  },
-
-  getAvaliableZone() {
-    return this.fetchResoures('osAvailabilityZone').then(res => {
-      const availableZones = (res || []).filter((z) => z.zoneState.available)
-
-      set(this, 'availableZones', availableZones)
-
-      if (get(this, 'mode') === 'new') {
-        setProperties(this, {
-          'config.keypairs':      res[0] && res[0].zoneName || null,
-          'config.availableZone': availableZones.get('firstObject.zoneName'),
+  setValidityPeriodChoices(){
+    const intl = get(this, 'intl');
+    const validityPeriodChoices = Object.keys(BILLING_MODE_VALIDITY_PERIOD).reduce((prev, period)=>{
+      BILLING_MODE_VALIDITY_PERIOD[period].forEach(item=>{
+        prev.push({
+          label: item + ' ' + intl.t(`clusterNew.huaweicce.bmsIsAutoRenew.${period}s`, {count: item}),
+          value: `${item} ${period}`
         })
-      }
-    })
+      })
+  
+      return prev;
+    }, []);
 
-    return res;
+    set(this, 'validityPeriodChoices', validityPeriodChoices);
   },
 
-  fetchResoures(resource, externalParams = {}) {
+  flavorChoices: computed('flavors.[]', function() {
+    const flavors = get(this, 'flavors') || []
+
+    return flavors.filter((n) => {
+      const az   = get(this, 'config.availableZone');
+      let statusString = get(n, 'os_extra_specs.cond:operation:az')
+      let statusSubString = '';
+
+      if (statusString === undefined) {
+        return true
+      }
+
+      statusSubString = statusString.split(',').find(item => item.indexOf(az) !== -1)
+
+      if (statusSubString === undefined) {
+        return true
+      }
+
+      statusSubString = statusSubString.match(/\([a-z]+\)/)
+
+      return !(statusSubString === '(abandon)' || statusSubString === '(sellout)');
+    }).map((n) => {
+      return {
+        label: `${ n.name } ( vCPUs: ${ n.vcpus }, memory: ${ n.ram / 1024 } GB )`,
+        value: n.name,
+        group: n.name.split('.')[0]
+      }
+    })
+  }),
+
+  queryFromHuawei(resource, externalParams = {}) {
+    const cloudCredentialId = get(this, 'primaryResource.cloudCredentialId');
     const url = `/meta/cce/${resource}`
     const query = Object.assign({}, externalParams, {
-      accessKey: get(this, 'config.accessKey'),
-      secretKey: get(this, 'config.secretKey'),
-      projectID: get(this, 'config.projectId'),
-      regionID: get(this, 'config.region'),
+      cloudCredentialId,
     });
 
     const req = {
@@ -1100,14 +1455,4 @@ export default Ember.Component.extend(ClusterDriver, {
       return `${ key }${ deep ? encodeURIComponent('=') : '=' }${ encodeURIComponent(params[key]) }`;
     }).join(deep ? encodeURIComponent('&') : '&');
   },
-
-  displayField(key, choices){
-    const intl = get(this, 'intl');
-    const value = get(this, `config.${key}`);
-    const content = choices || get(this, `${key}Content`);
-    const current = content.findBy('value', value);
-    const label = get(current, 'label');
-
-    return label.includes('clusterNew.huaweicce') ? intl.t(label) : label;
-  }
 });

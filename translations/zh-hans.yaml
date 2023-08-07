@@ -9,6 +9,9 @@ clusterNew:
     access:
       title: 帐户访问
       detail: 选择用于启动华为云容器引擎的区域和API KEY。
+      nodePoolUpdateError: 节点池正在创建中，无法升级，请稍后再试。
+      next: '下一步: 配置集群'
+      loading: 从华为云获取集群配置信息...
     accessKey:
       label: 访问密钥ID
       placeholder: CCE访问密钥ID
@@ -38,12 +41,22 @@ clusterNew:
       af_south_1: 非洲-约翰内斯堡
       sa_brazil_1: 拉美-圣保罗一
       la_south_2: 拉美-圣地亚哥
+      cn_north_9: 华北-乌兰察布一
+      eu_west_0: 欧洲-巴黎
+      eu_west_101: 欧洲-都柏林
+      tr_west_1: 土耳其-伊斯坦布尔
+      ae_ad_1: 中东-阿布扎比-OP5
+    clusterSelect:
+      title: 选择集群
+      detail: 选择要注册的 TKE 集群
+      next: 注册集群
+      importCluster: 集群
+      required: 必须设置需要导入的集群
+      placeholder: '请选择'
     business:
       label: 业务
-    checkAccount: '下一步: 配置集群'
-    checkingAccount: 用户校验中...
-    configureNode: '下一步: 配置节点'
-    configuringNode: 配置中...
+    configureNodepool: '下一步: 配置节点池'
+    configuringNodepool: 获取节点池信息...
     clusterOption:
       title: 集群选项
       detail: 为集群自定义Kubernetes选项
@@ -57,23 +70,22 @@ clusterNew:
         label: 鲲鹏集群
     clusterFlavor:
       label: Cluster Flavor
-    masterVersion:
+    version:
       label: 版本
       warningNotRecommend: “{version}”，此版本华为 CCE 不推荐使用。具体请查阅华为官方文档。
       warningRacher: “{version}”，此版本不在 Rancher 支持矩阵范围内。可参考
       warningRancherTip: Rancher 支持矩阵。
     vpcId:
       label: 虚拟私有云
+      default: 自动创建
     subnetId:
       label: 所在子网
       none: 无可用子网
+      default: 自动创建
     highwaySubnet:
       label: 高速网卡
       placeholder: 高速子网
       none: 没有高速子网被使用
-    nodeOption:
-      title: 节点选项
-      detail: 为节点自定义选项
     dataVolumeType:
       label: 数据盘类型
     dataVolumeSize:
@@ -84,6 +96,7 @@ clusterNew:
       SSD: 超高IO
       SATA: 普通IO
       GPSSD: 通用SSD
+      ESSD: 极速型SSD
     description:
       label: 描述
       placeholder: '例如: 华为CCE集群'
@@ -91,13 +104,14 @@ clusterNew:
       label: 带宽
     eipChargeMode:
       label: 计费模式
-      bandwith: 按带宽计费
+      bandwidth: 按带宽计费
       traffic: 按流量计费
     eipCount:
       label: 数量
     availableZone:
       label: 当前区域
       value: 可用区{num}
+      random: 随机
     billingMode:
       label: 计费模式
       payPerUse: 按需计费
@@ -107,7 +121,7 @@ clusterNew:
       placeholder: '例如: 172.16.0.0/16'
       none: 无配置
       cidrFormatError: '"容器网段" 格式错误'
-    kubernetesSvcIpRange:
+    kubernetesSvcIPRange:
       label: 服务网段
       placeholder: '例如: 10.247.0.0/16'
       none: 无配置
@@ -126,14 +140,16 @@ clusterNew:
     rootVolumeSize:
       label: 系统盘大小
       placeholder: "容量范围: 40 ~ 1024"
-    nodeCount:
+    initialNodeCount:
       label: 节点个数
-    nodeFlavor:
+    flavor:
       label: 节点规格
     sshKey:
       label: 密钥对
-    eip:
-      label: 弹性IP
+    publicAccess:
+      label: 使用公网访问
+    kubeProxyMode:
+      label: 服务转发模式
     eipSelection:
       none: 暂不使用
       new: 创建新的
@@ -164,16 +180,41 @@ clusterNew:
       disabled: 禁用 - CCE集群将部署在Rancher所在的VPC
     highAvailability:
       label: 高可用
+    nodeType: 
+      label: 节点类型
+      vm: 弹性云服务器 - 虚拟机
+      pm: 弹性云服务器 - 物理机
+      elasticBMS: 裸金属服务器
+    runtime:
+      label: 容器引擎
+    securityGroup:
+      label: 安全组
+      required: 请选择安全组
+      default: 默认安全组
     managementScale:
       label: 集群管理规模
-    nodeOperationSystem:
+    operatingSystem:
       label: 操作系统
     authenticatingProxyCa:
-      label: CA根证书
+      label: CA 根证书
+    authenticatingProxyCert:
+      label: 客户端证书
+    authenticatingProxyPrivateKey:
+      label: 客户端证书私钥
     validityPeriod:
       label: 有效期
     bmsIsAutoRenew:
-      label: 自动更新
+      label: 自动续费
+      months: |
+        {count, plural,
+          =1 {个月}
+          other {个月}
+        }
+      years: |
+        {count, plural,
+          =1 {年}
+          other {年}
+        }
     loginMode:
       label: 登录方式
       password: 密码
@@ -184,9 +225,9 @@ clusterNew:
     userName:
       label: 用户名
     authentiactionMode:
-      label: 认证模式
-      rbac: RBAC
-      authenticating_proxy: 认证代理
+      label: 证书认证
+      rbac: 系统默认
+      authenticating_proxy: 自定义
     eipShareType:
       label: 共享Eip类型
       per: 独享
@@ -194,3 +235,13 @@ clusterNew:
     generic:
       mbitS: Mbit/s
       isRequired: 必须填写
+    nodeGroups:
+      title: 管理节点池
+      detail: 自定义管理节点池
+      addLabel: 添加节点池
+      noNodes: 没有节点池
+    nodePoolName:
+      label: 节点池名称
+      placeholder: 例如：nodepool
+      required: 必须设置 worker 节点池名称
+      same: 节点池名称 “{name}” 不唯一

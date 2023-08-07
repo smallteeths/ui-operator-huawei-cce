@@ -1,5 +1,5 @@
 {
-  "name": "ui-cluster-driver-huawei",
+  "name": "ui-cluster-driver-cceoperatorsetting",
   "version": "0.1.0",
   "description": "Skeleton Rancher UI driver for custom kubernetes cluster drivers",
   "repository": {
