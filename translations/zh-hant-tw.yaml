@@ -50,7 +50,7 @@ clusterNew:
       label: 業務
     clusterSelect:
       title: 選擇集群
-      detail: 選擇要註冊的 TKE 集群
+      detail: 選擇要註冊的 CCE 集群
       next: 註冊集群
       importCluster: 集群
       required: 必須設置需要導入的集群

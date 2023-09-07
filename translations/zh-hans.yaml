@@ -48,7 +48,7 @@ clusterNew:
       ae_ad_1: 中东-阿布扎比-OP5
     clusterSelect:
       title: 选择集群
-      detail: 选择要注册的 TKE 集群
+      detail: 选择要注册的 CCE 集群
       next: 注册集群
       importCluster: 集群
       required: 必须设置需要导入的集群

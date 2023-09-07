@@ -50,7 +50,7 @@ clusterNew:
       label: Business
     clusterSelect:
       title: Select Cluster
-      detail: Select the TKE cluster to register
+      detail: Select the CCE cluster to register
       next: Register cluster
       importCluster: Cluster
       required: The cluster to be imported must be set
