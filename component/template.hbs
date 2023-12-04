@@ -128,7 +128,7 @@
               {{new-select 
                 classNames="form-control"
                 value=managementScale
-                content=managementScaleChoices
+                content=managementScaleFormatOptions
               }}
             {{/input-or-display}}
           </div>
@@ -550,6 +550,7 @@
                     classNames="form-control"
                     placeholder=(t "clusterNew.huaweicce.nodePoolName.placeholder")
                     value=nodePool.nodePoolName
+                    disabled=isImportProvider
                   }}
                 </div>
                 <div class="col span-3 mb-0">
@@ -566,23 +567,27 @@
                         </label>
                       </div>
                       <div class="radio">
-                        <label>
-                          {{radio-button selection=nodePool.runtime value="docker"}}
-                          Docker
-                        </label>
+                        {{#if (not containerdOnly)}}
+                          <label>
+                            {{radio-button selection=nodePool.runtime value="docker"}}
+                            Docker
+                          </label>
+                        {{/if}}
                       </div>
                     {{/if}}
                   </div>
                 <div class="pull-right">
-                  <button
-                    style="background:transparent"
-                    class="btn bg-transparent text-small vertical-middle"
-                    type="button"
-                    disabled={{eq nodePoolList.length 1}}
-                    {{action 'removeNodePool' nodePool}}
-                  >
-                    {{t "nodeGroupRow.remove.label"}}
-                  </button>
+                  {{#if (not isImportProvider)}}
+                    <button
+                      style="background:transparent"
+                      class="btn bg-transparent text-small vertical-middle"
+                      type="button"
+                      disabled={{eq nodePoolList.length 1}}
+                      {{action 'removeNodePool' nodePool}}
+                    >
+                      {{t "nodeGroupRow.remove.label"}}
+                    </button>
+                  {{/if}}
                 </div>
               </div>
               <div class="row">
@@ -590,34 +595,50 @@
                   <label class="acc-label">
                     {{t "clusterNew.huaweicce.availableZone.label"}}
                   </label>
-                  {{#input-or-display
-                    editable=(or (not nodePool.nodePoolID) isNew)
-                    value=nodePool.displayAvailableZone
-                  }}
-                    {{new-select 
-                      classNames="form-control"
-                      content=availableZoneChoices
-                      value=nodePool.availableZone
-                      change=(action 'availableZoneChange' nodePool)
+                  {{#if isImportProvider}}
+                    <div>
+                      {{ nodePool.availableZone }}
+                    </div>
+                  {{else}}
+                    {{#input-or-display
+                      editable=(or (not nodePool.nodePoolID) isNew)
+                      value=nodePool.displayAvailableZone
                     }}
-                  {{/input-or-display}}
+                      {{new-select 
+                        classNames="form-control"
+                        content=availableZoneChoices
+                        value=nodePool.availableZone
+                        change=(action 'availableZoneChange' nodePool)
+                      }}
+                    {{/input-or-display}}
+                  {{/if}}
                 </div>
                 <div class="col span-6 mb-0">
                   <label class="acc-label">
                     {{t "clusterNew.huaweicce.billingMode.label"}}
                   </label>
-                  {{#input-or-display
-                    editable=(or (not nodePool.nodePoolID) isNew)
-                    value=nodePool.displayBillingMode
-                  }}
-                    {{searchable-select 
-                      class="form-control"
-                      content=billingModeChoices
-                      value=nodePool.billingMode
-                      localizedLabel=true
-                      change=(action 'billingModeChange' nodePool)
+                  {{#if isImportProvider}}
+                    <div>
+                      {{#if (eq nodePool.billingMode 0)}}
+                        {{t "clusterNew.huaweicce.billingMode.payPerUse"}}
+                      {{else}}
+                        {{t "clusterNew.huaweicce.billingMode.yearly"}}
+                      {{/if}}
+                    </div>
+                  {{else}}
+                    {{#input-or-display
+                      editable=(or (not nodePool.nodePoolID) isNew)
+                      value=nodePool.displayBillingMode
                     }}
-                  {{/input-or-display}}
+                      {{searchable-select 
+                        class="form-control"
+                        content=billingModeChoices
+                        value=nodePool.billingMode
+                        localizedLabel=true
+                        change=(action 'billingModeChange' nodePool)
+                      }}
+                    {{/input-or-display}}
+                  {{/if}}
                 </div>
               </div>
               {{#if (eq nodePool.billingMode 1)}}
@@ -664,20 +685,27 @@
                   <label class="acc-label">
                     {{t "clusterNew.huaweicce.rootVolumeType.label"}}
                   </label>
-                  {{#input-or-display
-                    editable=(or (not nodePool.nodePoolID) isNew)
-                    value=nodePool.displayRootVolumeType
-                  }}
-                    {{new-select classNames="form-control"
-                      value=nodePool.rootVolumeType
-                      content=nodePool.volumeTypeChoices
-                      localizedLabel=true
+                  {{#if isImportProvider}}
+                    <div>
+                      {{ nodePool.rootVolumeType }}
+                    </div>
+                  {{else}}
+                    {{#input-or-display
+                      editable=(or (not nodePool.nodePoolID) isNew)
+                      value=nodePool.displayRootVolumeType
                     }}
-                  {{/input-or-display}}
+                      {{new-select classNames="form-control"
+                        value=nodePool.rootVolumeType
+                        content=nodePool.volumeTypeChoices
+                        localizedLabel=true
+                      }}
+                    {{/input-or-display}}
+                  {{/if}}
                 </div>
                 <div class="col span-6 mb-0">
                   <label class="acc-label">
                     {{t "clusterNew.huaweicce.rootVolumeSize.label"}}{{field-required}}
+                    <i class="ml-5">({{t "clusterNew.huaweicce.volumetype.rootDescription"}})</i>
                   </label>
                   <div class="input-group">
                     {{#if (and editing nodePool.nodePoolID)}}
@@ -700,20 +728,27 @@
                   <label class="acc-label">
                     {{t "clusterNew.huaweicce.dataVolumeType.label"}}
                   </label>
-                  {{#input-or-display
-                    editable=(or (not nodePool.nodePoolID) isNew)
-                    value=nodePool.displayDataVolumeType
-                  }}
-                    {{new-select classNames="form-control"
-                      value=nodePool.dataVolumeType
-                      content=nodePool.volumeTypeChoices
-                      localizedLabel=true
+                  {{#if isImportProvider}}
+                    <div>
+                      {{ nodePool.dataVolumeType }}
+                    </div>
+                  {{else}}
+                    {{#input-or-display
+                      editable=(or (not nodePool.nodePoolID) isNew)
+                      value=nodePool.displayDataVolumeType
                     }}
-                  {{/input-or-display}}
+                      {{new-select classNames="form-control"
+                        value=nodePool.dataVolumeType
+                        content=nodePool.volumeTypeChoices
+                        localizedLabel=true
+                      }}
+                    {{/input-or-display}}
+                  {{/if}}
                 </div>
                 <div class="col span-6 mb-0">
                   <label class="acc-label">
                     {{t "clusterNew.huaweicce.dataVolumeSize.label"}}{{field-required}}
+                    <i class="ml-5">({{t "clusterNew.huaweicce.volumetype.dataDescription"}})</i>
                   </label>
                   <div class="input-group">
                     {{#if (and editing nodePool.nodePoolID)}}
@@ -727,7 +762,7 @@
                         placeholder=(t "clusterNew.huaweicce.dataVolumeSize.placeholder")
                       }}
                       <span class="input-group-addon bg-default">{{t "generic.gigabyte"}}</span>
-                    {{/if}}
+                    {{/if}}        
                   </div>
                 </div>
               </div>
@@ -748,7 +783,7 @@
                   <label class="acc-label">
                     {{t "clusterNew.huaweicce.initialNodeCount.label"}}
                   </label>
-                  {{input-number min=0 value=nodePool.initialNodeCount max=initialNodeCountMax}}
+                  {{input-number disabled=isImportProvider min=0 value=nodePool.initialNodeCount max=initialNodeCountMax}}
                 </div>
               </div>
               <div class="row">
@@ -766,14 +801,20 @@
                 </div>
                 <div class="col span-6">
                   <label class="acc-label">{{t "clusterNew.huaweicce.sshKey.label"}}{{field-required}}</label>
-                  {{#if (and editing nodePool.nodePoolID)}}
-                    <div>{{nodePool.displaySshKey}}</div>
+                  {{#if isImportProvider}}
+                    <div>
+                      {{ nodePool.sshKey }}
+                    </div>
                   {{else}}
-                    {{new-select 
-                      classNames="form-control"
-                      value=nodePool.sshKey
-                      content=sshKeyChoices
-                    }}
+                    {{#if (and editing nodePool.nodePoolID)}}
+                      <div>{{nodePool.displaySshKey}}</div>
+                    {{else}}
+                      {{new-select 
+                        classNames="form-control"
+                        value=nodePool.sshKey
+                        content=sshKeyChoices
+                      }}
+                    {{/if}}
                   {{/if}}
                 </div>
               </div>

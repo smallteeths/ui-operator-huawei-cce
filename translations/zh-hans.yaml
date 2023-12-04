@@ -97,6 +97,8 @@ clusterNew:
       SATA: 普通IO
       GPSSD: 通用SSD
       ESSD: 极速型SSD
+      rootDescription: "系统盘取值范围: 40~1024 单位为GB"
+      dataDescription: "数据盘取值范围: 100~32768 单位为GB"
     description:
       label: 描述
       placeholder: '例如: 华为CCE集群'

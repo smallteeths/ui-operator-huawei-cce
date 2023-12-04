@@ -98,6 +98,8 @@ clusterNew:
       SATA: 普通IO
       GPSSD: 通用SSD
       ESSD: 極速型SSD
+      rootDescription: "繫統盤取值範圍: 40~1024 單位為GB"
+      dataDescription: "數據盤取值範圍: 100~32768 單位為GB"
     description:
       label: 描述
       placeholder: '例如: 華為CCE集羣'
