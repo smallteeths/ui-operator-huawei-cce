@@ -97,6 +97,8 @@ clusterNew:
       SATA: SATA
       GPSSD: GPSSD
       ESSD:  ESSD
+      rootDescription: "Root Disk: Range of values: 40 to 1024 GB"
+      dataDescription: "Data Disk: Range of values: 100 to 32768 GB"
     description:
       label: Description
       placeholder: e.g. Cluster for Huawei CCE
