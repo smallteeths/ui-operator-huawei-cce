@@ -96,13 +96,13 @@ export default Ember.Component.extend(ClusterDriver, {
   volumeTypes: [],
   versionChoices: [
     {
-      label: 'v1.25',
-      value: 'v1.25',
+      label: 'v1.27',
+      value: 'v1.27',
       rancherEnabled: true,
     },
     {
-      label: 'v1.23',
-      value: 'v1.23',
+      label: 'v1.25',
+      value: 'v1.25',
       rancherEnabled: true,
     },
   ],
@@ -182,7 +182,7 @@ export default Ember.Component.extend(ClusterDriver, {
         regionID:              '',
         dataVolumeSize:        100,
         vpcId:                 null,
-        version:               'v1.25',
+        version:               'v1.27',
         billingMode:           0,
         containerNetworkMode:  'vpc-router',
         clusterFlavor:         'cce.s2.small',
@@ -476,14 +476,13 @@ export default Ember.Component.extend(ClusterDriver, {
         return;
       }
 
-      const intl = get(this, 'intl');
-
-
+      const { imported } = get(this, 'config')
       
-      const config = this.formatConfig();
-
-      set(this, 'cluster.cceConfig', config);
-
+      if (!imported) {
+        const config = this.formatConfig();
+        set(this, 'cluster.cceConfig', config);
+      }
+      
       this.send('driverSave', cb);
     },
 
@@ -501,7 +500,7 @@ export default Ember.Component.extend(ClusterDriver, {
       const volumeTypeChoices = volumeTypeChoicesByZones[zoneID] || [];
 
       set(nodePool, 'flavorChoices', flavorChoices);
-      set(nodePool, 'flavor', this.getDefaultSelected(flavorChoices, 'c7.large.2'));
+      set(nodePool, 'flavor', this.getDefaultSelected(flavorChoices, nodePool.flavor ? nodePool.flavor : 'c7.large.2'));
       set(nodePool, 'volumeTypeChoices', volumeTypeChoices);
       set(nodePool, 'volumeType', this.getDefaultSelected(volumeTypeChoices));
       set(nodePool, 'rootVolumeType', this.getDefaultSelected(volumeTypeChoices));
@@ -570,6 +569,8 @@ export default Ember.Component.extend(ClusterDriver, {
       taglength: Object.keys(tags || {}).length,
       clusterID,
       kubeProxyMode,
+      imported: config.imported,
+      clusterFlavor: config.flavor,
     };
 
     if(get(config, 'publicAccess')){
@@ -673,7 +674,7 @@ export default Ember.Component.extend(ClusterDriver, {
     }
 
     const intl = get(this, 'intl');
-    const regionId = get(cloudCredential, 'huaweicredentialConfig.regionID') || get(this, 'config.regionID') || '';
+    const regionId = get(cloudCredential, 'huaweicredentialConfig.regionID') || get(this, 'config.region') || '';
     cloudCredential.regionName = intl.t(`clusterNew.huaweicce.region.${regionId.replace(/\-/g, '_')}`);
     cloudCredential.regionID = regionId;
 
@@ -754,17 +755,41 @@ export default Ember.Component.extend(ClusterDriver, {
   }),
 
   operatingSystemChoices: computed('config.version', function() {
-    const types = ['EulerOS 2.9', 'CentOS 7.6', 'EulerOS 2.5'];
+    const types = ['EulerOS 2.9', 'CentOS 7.6'];
+    if (get(this, 'config.version') === 'v1.25') {
+      types.push('EulerOS 2.5')
+    }
     const containerNetworkMode = get(this, 'config.containerNetworkMode');
 
     if(containerNetworkMode !== 'overlay_l2'){
-      types.push('Huawei Cloud EulerOS 2.0', 'Ubuntu 22.04', 'Ubuntu 18.04');
+      types.push('Huawei Cloud EulerOS 2.0', 'Ubuntu 22.04');
+      if (get(this, 'config.version') === 'v1.25') {
+        types.push('Ubuntu 18.04')
+      }
     }
 
     return types.map(item=>({
       label: item,
       value: item
     }))
+  }),
+
+  containerdOnly: computed('config.version', function() {
+    const currentVersion = 'v1.25';
+    const formattedCurrentVersion = currentVersion.replace('v', '');
+    const formattedInputVersion = get(this, 'config.version').replace('v', '');
+
+    const currentVersionParts = formattedCurrentVersion?.split('.')?.map(Number);
+    const inputVersionParts = formattedInputVersion?.split('.')?.map(Number);
+
+    for (let i = 0; i < currentVersionParts?.length; i++) {
+        if (inputVersionParts[i] > currentVersionParts[i]) {
+            return true;
+        } else if (inputVersionParts[i] < currentVersionParts[i]) {
+            return false;
+        }
+    }
+    return false
   }),
 
   securityGroupShowValue: computed('securityGroupChoices.[]', 'config.securityGroup', 'intl.locale', function() {
@@ -808,6 +833,23 @@ export default Ember.Component.extend(ClusterDriver, {
     const current     = get(this, 'managementScale');
 
     return get(choices.findBy('value', current), 'label');
+  }),
+
+  managementScaleFormatOptions: computed('managementScaleChoices', 'highAvailabilityEnabled', function() {
+    if (get(this, 'highAvailabilityEnabled') === 's1') {
+      return get(this, 'managementScaleChoices').map((option) => {
+        let disabled = false
+        if ( get(this, 'editing') && parseInt(option.label, 10) > 200) {
+          disabled = true
+        }
+        return {
+          ...option,
+          disabled
+        }
+      })
+    }
+      
+    return get(this, 'managementScaleChoices');
   }),
 
   vpcChoices: computed('vpcs.[]', function() {
@@ -1068,7 +1110,7 @@ export default Ember.Component.extend(ClusterDriver, {
   },
   fetchVolumeTypes(){
     const volumeTypeChoicesByZones = {};
-    const types = ['SSD', 'SAS', 'SATA']; // todo
+    const types = ['SSD', 'SAS', 'SATA', 'GPSSD', 'ESSD']; // todo
     return this.queryFromHuawei('volumeTypes').then(res => {
       const out = [];
 
@@ -1248,7 +1290,7 @@ export default Ember.Component.extend(ClusterDriver, {
 
   formatConfig(){
     const nodePoolList = [];
-    const {containerNetworkCidr, kubernetesSvcIPRange, containerNetworkMode, version, clusterFlavor, vpcId, subnetId, description, tags, authentiactionMode, eipType, eipChargeMode, eipBandwidthSize, securityGroup, clusterExternalIP, kubeProxyMode} = get(this, 'config');
+    const { containerNetworkCidr, kubernetesSvcIPRange, containerNetworkMode, version, clusterFlavor, vpcId, subnetId, description, tags, authentiactionMode, eipType, eipChargeMode, eipBandwidthSize, securityGroup, clusterExternalIP, kubeProxyMode } = get(this, 'config');
     const { eipSelection } = this;
 
     get(this, 'nodePoolList').forEach(nodePool=>{
