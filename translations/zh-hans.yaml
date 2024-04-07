@@ -123,6 +123,9 @@ clusterNew:
       placeholder: '例如: 172.16.0.0/16'
       none: 无配置
       cidrFormatError: '"容器网段" 格式错误'
+    eniNetworkCidr:
+      label: Eni Network
+      placeholder: 子网ID
     kubernetesSvcIPRange:
       label: 服务网段
       placeholder: '例如: 10.247.0.0/16'
@@ -137,6 +140,8 @@ clusterNew:
         label: 'Underlay l2网络'
       vpcRouter:
         label: VPC网络
+      eni:
+        label: eni
     rootVolumeType:
       label: 系统盘类型
     rootVolumeSize:

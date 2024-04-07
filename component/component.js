@@ -51,6 +51,11 @@ const CONTAINER_NETWORK_MODES = [{
   label: 'clusterNew.huaweicce.containerNetworkMode.vpcRouter.label',
   value: 'vpc-router',
   bare: false
+}, {
+  label: 'clusterNew.huaweicce.containerNetworkMode.eni.label',
+  value: 'eni',
+  disabled: true,
+  bare: false
 }]
 
 const BILLING_MODES = [{
@@ -94,15 +99,27 @@ export default Ember.Component.extend(ClusterDriver, {
 
   layout:       null,
   volumeTypes: [],
+  mutipleSelectOptions: [],
+  selectedMutipleSelectOptions: [],
+  clusterTypeChoices: [
+    {
+      label: 'CCE',
+      value: 'CCE',
+    },
+    {
+      label: 'Turbo',
+      value: 'Turbo',
+    },
+  ],
   versionChoices: [
     {
-      label: 'v1.27',
-      value: 'v1.27',
+      label: 'v1.28',
+      value: 'v1.28',
       rancherEnabled: true,
     },
     {
-      label: 'v1.25',
-      value: 'v1.25',
+      label: 'v1.27',
+      value: 'v1.27',
       rancherEnabled: true,
     },
   ],
@@ -178,6 +195,7 @@ export default Ember.Component.extend(ClusterDriver, {
 
     if ( !config ) {
       config = this.get('globalStore').createRecord({
+        category:              'CCE',
         type:                  'huaweiEngineConfig',
         regionID:              '',
         dataVolumeSize:        100,
@@ -198,6 +216,9 @@ export default Ember.Component.extend(ClusterDriver, {
         eipChargeMode:         'bandwidth',
         securityGroup:         '',
         kubeProxyMode:         'iptables',
+        eniNetwork:            {
+          subnets:             []
+        },
       });
 
       set(this, 'config', config);
@@ -324,7 +345,10 @@ export default Ember.Component.extend(ClusterDriver, {
     },
 
     async configureNode(cb) {
-      const requiredConfig = ['containerNetworkCidr', 'kubernetesSvcIPRange'];
+      const requiredConfig = ['kubernetesSvcIPRange'];
+      if (!get(this, 'isTurbo')) {
+        requiredConfig.push('containerNetworkCidr')
+      }
       const cidrIPV4RegExp = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\/\d{1,2}$/;
       const intl = get(this, 'intl');
 
@@ -333,13 +357,16 @@ export default Ember.Component.extend(ClusterDriver, {
 
       errors = this.validateFields(errors, requiredConfig, 'config');
 
-      if(get(this, 'config.containerNetworkCidr') && !cidrIPV4RegExp.test(get(this, 'config.containerNetworkCidr'))){
+      if(!get(this, 'isTurbo') && get(this, 'config.containerNetworkCidr') && !cidrIPV4RegExp.test(get(this, 'config.containerNetworkCidr'))){
         errors.pushObject(intl.t('clusterNew.huaweicce.containerNetworkCidr.cidrFormatError'))
       }
       if(get(this, 'config.kubernetesSvcIPRange') && !cidrIPV4RegExp.test(get(this, 'config.kubernetesSvcIPRange'))){
         errors.pushObject(intl.t('clusterNew.huaweicce.kubernetesSvcIPRange.cidrFormatError'))
       }
-
+      
+      if (get(this, 'isTurbo') && get(this, 'config.eniNetwork.subnets')?.length === 0) {
+        errors.pushObject(`"${ intl.t(`clusterNew.huaweicce.eniNetworkCidr.label`) }" ${ intl.t(`clusterNew.huaweicce.generic.isRequired`) }`)
+      }
       if (errors.length > 0) {
         set(this, 'errors', errors);
         cb();
@@ -511,8 +538,27 @@ export default Ember.Component.extend(ClusterDriver, {
         set(nodePool, 'validityPeriod', this.getDefaultSelected(get(this, 'validityPeriodChoices')));
         set(nodePool, 'bmsIsAutoRenew', 'false');
       }
-    }
+    },
+    change(record) {
+      let selectedOptions = get(this, 'selectedMutipleSelectOptions') ? get(this, 'selectedMutipleSelectOptions') : [];
+
+      if (selectedOptions.some((selectedOption) => selectedOption.value === record.value )) {
+        set(this, 'selectedMutipleSelectOptions', selectedOptions.filter((selectedOption) => selectedOption.value !== record.value))
+      } else {
+        selectedOptions.push(record)
+
+        set(this, 'selectedMutipleSelectOptions', selectedOptions.map((item) => item))
+      }
+    },
   },
+
+  selectedMutipleSelectOptionsWatch: observer('selectedMutipleSelectOptions.[]', function() {
+    let selectedOptions = get(this, 'selectedMutipleSelectOptions') ? get(this, 'selectedMutipleSelectOptions') : [];
+
+    set(this, 'config.eniNetwork.subnets', selectedOptions?.length >0 ? selectedOptions.map((option) => {
+      return option.value
+    }) : [])
+  }),
 
   languageDidChanged: observer('intl.locale', function() {
     const lang = get(this, 'intl.locale');
@@ -553,9 +599,10 @@ export default Ember.Component.extend(ClusterDriver, {
       nodePoolList.push(Object.assign(out, displayShowValue));
     });
 
-    const { containerNetwork, version, hostNetwork, kubernetesSvcIPRange, description, authentication, tags, clusterID, publicIP, kubeProxyMode } = get(this, 'config');
+    const { category, containerNetwork, version, hostNetwork, kubernetesSvcIPRange, description, authentication, tags, clusterID, publicIP, kubeProxyMode, eniNetwork } = get(this, 'config');
 
     const out = {
+      category,
       containerNetworkCidr: containerNetwork.cidr,
       containerNetworkMode: containerNetwork.mode,
       version,
@@ -571,6 +618,7 @@ export default Ember.Component.extend(ClusterDriver, {
       kubeProxyMode,
       imported: config.imported,
       clusterFlavor: config.flavor,
+      eniNetwork,
     };
 
     if(get(config, 'publicAccess')){
@@ -623,6 +671,7 @@ export default Ember.Component.extend(ClusterDriver, {
     const filter = subnets.filter((s) => s.vpc_id === vpcId)
 
     set(this, 'config.subnetId', '')
+    set(this, 'selectedMutipleSelectOptions', [])
   }),
 
   eipSelectionChange: observer('eipSelection', function() {
@@ -649,6 +698,14 @@ export default Ember.Component.extend(ClusterDriver, {
       set(this, 'highAvailabilityEnabled', 's2');
     }
   }),
+  containerNetworkModeObserver: observer('config.category', function() {
+    if(get(this, 'config.category') === 'Turbo'){
+      set(this, 'config.containerNetworkMode', 'eni');
+    } else {
+      set(this, 'config.containerNetworkMode', 'vpc-router');
+    }
+    set(this, 'selectedMutipleSelectOptions', [])
+  }),
 
   // Any computed properties or custom logic can go here
   isActive: computed('cluster', function() {
@@ -660,7 +717,23 @@ export default Ember.Component.extend(ClusterDriver, {
 
     return imported || get(router, 'currentRoute.queryParams.importProvider') === 'cce';
   }),
-
+  isTurbo: computed('config.category', function() {
+    return get(this, 'config.category') === 'Turbo';
+  }),
+  subnetsName:computed('config.eniNetwork.subnets', function() {
+    return get(this, 'config.eniNetwork.subnets').map((subnet) =>{
+      if (get(this, 'neutronSubnetIdChoices')?.length > 0) {
+        let selectedSubnet = get(this, 'neutronSubnetIdChoices').filter((item) => {
+          return item.value === subnet
+        })
+        if (selectedSubnet?.length > 0) {
+          return selectedSubnet[0]?.label
+        }
+        return subnet
+      }
+      return subnet
+    })
+  }),
   cloudCredentials: computed('model.cloudCredentials', function() {
     const { model: { cloudCredentials } } = this;
 
@@ -887,6 +960,22 @@ export default Ember.Component.extend(ClusterDriver, {
       label: intl.t('clusterNew.huaweicce.subnetId.default'),
       value: '',
     }]);
+  }),
+
+  neutronSubnetIdChoices: computed('config.vpcId', 'subnets.[]', function() {
+    const subnets = get(this, 'subnets') || []
+    const vpcId = get(this, 'config.vpcId');
+
+    return subnets.reduce((prev, s)=>{
+      if(s.vpc_id === vpcId){
+        prev.push({
+          label: s.name,
+          value: s.neutron_subnet_id,
+        });
+      }
+
+      return prev;
+    }, []);
   }),
 
   vipSubnetChoices: computed('vipSubnets.[]', function() {
@@ -1290,7 +1379,7 @@ export default Ember.Component.extend(ClusterDriver, {
 
   formatConfig(){
     const nodePoolList = [];
-    const { containerNetworkCidr, kubernetesSvcIPRange, containerNetworkMode, version, clusterFlavor, vpcId, subnetId, description, tags, authentiactionMode, eipType, eipChargeMode, eipBandwidthSize, securityGroup, clusterExternalIP, kubeProxyMode } = get(this, 'config');
+    const { category, containerNetworkCidr, kubernetesSvcIPRange, containerNetworkMode, version, clusterFlavor, vpcId, subnetId, description, tags, authentiactionMode, eipType, eipChargeMode, eipBandwidthSize, securityGroup, clusterExternalIP, kubeProxyMode, eniNetwork } = get(this, 'config');
     const { eipSelection } = this;
 
     get(this, 'nodePoolList').forEach(nodePool=>{
@@ -1341,7 +1430,7 @@ export default Ember.Component.extend(ClusterDriver, {
     const config =  {
       name: get(this, 'primaryResource.name'),
       type: 'VirtualMachine',
-      category: 'CCE',
+      category,
       huaweiCredentialSecret: get(this, 'primaryResource.cloudCredentialId'),
       regionID: get(this, 'selectedCloudCredential.regionID'),
       imported: false,
@@ -1366,6 +1455,7 @@ export default Ember.Component.extend(ClusterDriver, {
       nodePools: nodePoolList,
       extendParam: {},
       kubeProxyMode,
+      eniNetwork,
     }
 
     if(config.clusterID){
@@ -1496,5 +1586,17 @@ export default Ember.Component.extend(ClusterDriver, {
 
       return `${ key }${ deep ? encodeURIComponent('=') : '=' }${ encodeURIComponent(params[key]) }`;
     }).join(deep ? encodeURIComponent('&') : '&');
+  },
+  calculatePosition(trigger) {
+    let {
+      top, left, width, height
+    } = trigger.getBoundingClientRect();
+    let style = {
+      width,
+      left,
+      top: top + window.pageYOffset + height
+    };
+
+    return { style };
   },
 });
