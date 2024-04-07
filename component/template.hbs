@@ -105,6 +105,39 @@
         <div class="row">
           <div class="col span-6 mb-0">
             <label class="acc-label">
+              {{t "clusterNew.huaweicce.clusterType.label"}}{{field-required}}
+            </label>
+            {{#input-or-display
+              editable=(and (eq step 2) (not editing))
+              value=config.category
+            }}
+              {{searchable-select 
+                class="form-control"
+                content=clusterTypeChoices
+                value=config.category
+                allowCustom=true
+              }}
+            {{/input-or-display}}
+          </div>
+          <div class="col span-6 mb-0">
+            <label class="acc-label">
+              {{t "clusterNew.huaweicce.description.label"}}
+            </label>
+            {{#input-or-display
+              editable=(eq step 2)
+              value=config.description
+            }}
+              {{input 
+                type="text"
+                value=config.description
+                classNames="form-control"
+                placeholder=(t "clusterNew.huaweicce.description.placeholder")}}
+            {{/input-or-display}}
+          </div>
+        </div>
+        <div class="row">
+          <div class="col span-6 mb-0">
+            <label class="acc-label">
               {{t "clusterNew.huaweicce.version.label"}}{{field-required}}
             </label>
             {{#input-or-display
@@ -185,38 +218,7 @@
                 value=config.containerNetworkMode
                 content=containerNetworkModeChoices
                 localizedLabel=true
-              }}
-            {{/input-or-display}}
-          </div>
-        </div>
-        <div class="row">
-          <div class="col span-6 mb-0">
-            <label class="acc-label">
-              {{t "clusterNew.huaweicce.containerNetworkCidr.label"}}{{field-required}}
-            </label>
-            {{#input-or-display
-              editable=(and (eq step 2) (not editing))
-              value=config.containerNetworkCidr
-            }}
-              {{input type="text"
-                value=config.containerNetworkCidr
-                classNames="form-control"
-                placeholder=(t "clusterNew.huaweicce.kubernetesSvcIPRange.placeholder")
-              }}
-            {{/input-or-display}}
-          </div>
-          <div class="col span-6 mb-0">
-            <label class="acc-label">
-              {{t "clusterNew.huaweicce.kubernetesSvcIPRange.label"}}{{field-required}}
-            </label>
-            {{#input-or-display
-              editable=(and (eq step 2) (not editing))
-              value=config.kubernetesSvcIPRange
-            }}
-              {{input type="text"
-                value=config.kubernetesSvcIPRange
-                classNames="form-control"
-                placeholder=(t "clusterNew.huaweicce.kubernetesSvcIPRange.placeholder")
+                disabled=isTurbo
               }}
             {{/input-or-display}}
           </div>
@@ -252,6 +254,79 @@
           </div>
         </div>
         <div class="row">
+          {{#if isTurbo}}
+            <div class="col span-6 mb-0">
+              <label class="acc-label">
+                {{t "clusterNew.huaweicce.eniNetworkCidr.label"}}{{field-required}}
+              </label>
+              {{#if (and (eq step 2) (not editing))}}
+                <BasicDropdown @calculatePosition={{calculatePosition}} as |dd|>
+                  <dd.Trigger class="mutiple-select">
+                    <div class="mutiple-select-input">
+                      {{#if (eq selectedMutipleSelectOptions.length 0)}}
+                        {{t "clusterNew.huaweicce.eniNetworkCidr.placeholder"}}
+                      {{/if}}
+                      {{#each selectedMutipleSelectOptions as |option|}}
+                        <span class="mutiple-select-card mr-10">{{option.label}} <span class="mutiple-select-icon" onclick={{disable-bubbling (action "change" option)}}><i class="icon icon-close"/></span></span>
+                      {{/each}}
+                    </div>
+                  </dd.Trigger>
+                  <dd.Content class="mutiple-option-container">
+                    {{#if (eq neutronSubnetIdChoices.length 0)}}
+                      <div style="text-align: center;" class="mt-5 mb-5">
+                        No Data
+                      </div>
+                    {{else}}
+                      {{#each neutronSubnetIdChoices as |option|}}
+                        <li class="mutiple-select-option" onclick={{action "change" option}}>
+                          {{option.label}}
+                        </li>
+                      {{/each}}
+                    {{/if}}
+                  </dd.Content>
+                </BasicDropdown>
+              {{else}}
+                {{#if (gt subnetsName.length 0)}}
+                  {{#each subnetsName as |subent|}}
+                    <div class="mutiple-select-card mr-10">{{subent}}</div>
+                  {{/each}}
+                {{/if}}
+              {{/if}}
+            </div>
+          {{else}}
+            <div class="col span-6 mb-0">
+              <label class="acc-label">
+                {{t "clusterNew.huaweicce.containerNetworkCidr.label"}}{{field-required}}
+              </label>
+              {{#input-or-display
+                editable=(and (eq step 2) (not editing))
+                value=config.containerNetworkCidr
+              }}
+                {{input type="text"
+                  value=config.containerNetworkCidr
+                  classNames="form-control"
+                  placeholder=(t "clusterNew.huaweicce.kubernetesSvcIPRange.placeholder")
+                }}
+              {{/input-or-display}}
+            </div>
+          {{/if}}
+          <div class="col span-6 mb-0">
+            <label class="acc-label">
+              {{t "clusterNew.huaweicce.kubernetesSvcIPRange.label"}}{{field-required}}
+            </label>
+            {{#input-or-display
+              editable=(and (eq step 2) (not editing))
+              value=config.kubernetesSvcIPRange
+            }}
+              {{input type="text"
+                value=config.kubernetesSvcIPRange
+                classNames="form-control"
+                placeholder=(t "clusterNew.huaweicce.kubernetesSvcIPRange.placeholder")
+              }}
+            {{/input-or-display}}
+          </div>
+        </div>
+        <div class="row">
           <div class="col span-6">
             <label class="acc-label">
               {{t "clusterNew.huaweicce.securityGroup.label"}}
@@ -265,21 +340,6 @@
                 content=securityGroupChoices
                 value=config.securityGroup
               }}
-            {{/input-or-display}}
-          </div>
-          <div class="col span-6 mb-0">
-            <label class="acc-label">
-              {{t "clusterNew.huaweicce.description.label"}}
-            </label>
-            {{#input-or-display
-              editable=(eq step 2)
-              value=config.description
-            }}
-              {{input 
-                type="text"
-                value=config.description
-                classNames="form-control"
-                placeholder=(t "clusterNew.huaweicce.description.placeholder")}}
             {{/input-or-display}}
           </div>
         </div>

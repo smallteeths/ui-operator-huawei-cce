@@ -123,6 +123,9 @@ clusterNew:
       placeholder: e.g. 172.16.0.0/16
       none: No config
       cidrFormatError: '"Container CIDR Block" format error'
+    eniNetworkCidr:
+      label: Eni Network
+      placeholder: Subnet ID
     kubernetesSvcIPRange:
       label: Service CIDR Block
       placeholder: e.g. 10.247.0.0/16
@@ -137,6 +140,8 @@ clusterNew:
         label: underlay_ipvlan
       vpcRouter:
         label: vpc-router
+      eni:
+        label: eni
     rootVolumeType:
       label: Root Volume Type
     rootVolumeSize:
