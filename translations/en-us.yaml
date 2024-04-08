@@ -78,10 +78,12 @@ clusterNew:
     vpcId:
       label: VPC Name
       default: Default VPC
+      placeholder: Please select a VPC
     subnetId:
       label: Subnet Name
       none: No subnet in this VPC
       default: Default Subnet
+      placeholder: Please select a subnet
     highwaySubnet:
       label: Highway Subnet
       placeholder: Highway Subnet
