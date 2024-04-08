@@ -78,10 +78,12 @@ clusterNew:
     vpcId:
       label: 虛擬私有雲
       default: 自動創建
+      placeholder: 請選擇一个 VPC
     subnetId:
       label: 所在子網
       none: 無可用子網
       default: 自動創建
+      placeholder: 請選擇一个子網
     highwaySubnet:
       label: 高速網卡
       placeholder: 高速子網

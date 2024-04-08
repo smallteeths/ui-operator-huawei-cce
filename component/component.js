@@ -200,7 +200,7 @@ export default Ember.Component.extend(ClusterDriver, {
         regionID:              '',
         dataVolumeSize:        100,
         vpcId:                 null,
-        version:               'v1.27',
+        version:               'v1.28',
         billingMode:           0,
         containerNetworkMode:  'vpc-router',
         clusterFlavor:         'cce.s2.small',
@@ -348,6 +348,8 @@ export default Ember.Component.extend(ClusterDriver, {
       const requiredConfig = ['kubernetesSvcIPRange'];
       if (!get(this, 'isTurbo')) {
         requiredConfig.push('containerNetworkCidr')
+      } else {
+        requiredConfig.push('subnetId', 'vpcId')
       }
       const cidrIPV4RegExp = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\/\d{1,2}$/;
       const intl = get(this, 'intl');
@@ -663,11 +665,10 @@ export default Ember.Component.extend(ClusterDriver, {
       set(this, 'lanChanged', +new Date());
     });
   },
-  vpcIdChange: observer('config.vpcId', function() {
+  vpcIdChange: observer('config.vpcId', 'isTurbo', function() {
     this.getSubnet();
     const vpcId = get(this, 'config.vpcId')
     const subnets = get(this, 'subnets') || []
-
     const filter = subnets.filter((s) => s.vpc_id === vpcId)
 
     set(this, 'config.subnetId', '')
@@ -700,9 +701,13 @@ export default Ember.Component.extend(ClusterDriver, {
   }),
   containerNetworkModeObserver: observer('config.category', function() {
     if(get(this, 'config.category') === 'Turbo'){
+      const vpcs = get(this, 'vpcs') || []
       set(this, 'config.containerNetworkMode', 'eni');
+      set(this, 'config.containerNetworkCidr', '')
     } else {
       set(this, 'config.containerNetworkMode', 'vpc-router');
+      set(this, 'config.containerNetworkCidr', '10.0.0.0/16')
+      set(this, 'config.vpcId', '')
     }
     set(this, 'selectedMutipleSelectOptions', [])
   }),
@@ -925,9 +930,21 @@ export default Ember.Component.extend(ClusterDriver, {
     return get(this, 'managementScaleChoices');
   }),
 
-  vpcChoices: computed('vpcs.[]', function() {
+  vpcChoices: computed('vpcs.[]', 'isTurbo', function() {
     const vpcs = get(this, 'vpcs') || []
     const intl = get(this, 'intl');
+    let initVpcs = []
+    if (!get(this, 'isTurbo')) {
+      initVpcs.push({
+        label: intl.t('clusterNew.huaweicce.subnetId.default'),
+        value: '',
+      })
+    } else {
+      initVpcs.push({
+        label: intl.t('clusterNew.huaweicce.subnetId.placeholder'),
+        value: '',
+      })
+    }
 
     return vpcs.reduce((prev, v)=>{
       prev.push({
@@ -936,16 +953,25 @@ export default Ember.Component.extend(ClusterDriver, {
       });
 
       return prev;
-    },[{
-      label: intl.t('clusterNew.huaweicce.vpcId.default'),
-      value: '',
-    }])
+    },initVpcs)
   }),
 
-  subnetChoices: computed('config.vpcId', 'subnets.[]', function() {
+  subnetChoices: computed('config.vpcId', 'subnets.[]', 'isTurbo', function() {
     const subnets = get(this, 'subnets') || []
     const vpcId = get(this, 'config.vpcId');
     const intl = get(this, 'intl');
+    let initSubnets = []
+    if (!get(this, 'isTurbo')) {
+      initSubnets.push({
+        label: intl.t('clusterNew.huaweicce.subnetId.default'),
+        value: '',
+      })
+    } else {
+      initSubnets.push({
+        label: intl.t('clusterNew.huaweicce.subnetId.placeholder'),
+        value: '',
+      })
+    }
 
     return subnets.reduce((prev, s)=>{
       if(s.vpc_id === vpcId){
@@ -956,10 +982,7 @@ export default Ember.Component.extend(ClusterDriver, {
       }
 
       return prev;
-    }, [{
-      label: intl.t('clusterNew.huaweicce.subnetId.default'),
-      value: '',
-    }]);
+    }, initSubnets);
   }),
 
   neutronSubnetIdChoices: computed('config.vpcId', 'subnets.[]', function() {

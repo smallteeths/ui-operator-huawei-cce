@@ -225,7 +225,7 @@
         </div>
         <div class="row">
           <div class="col span-6 mb-0">
-            <label class="acc-label">{{t "clusterNew.huaweicce.vpcId.label"}}</label>
+            <label class="acc-label">{{t "clusterNew.huaweicce.vpcId.label"}}</label>{{field-required}}
             {{#input-or-display
               editable=(and (eq step 2) (not editing))
               value=vpcShowValue
@@ -239,7 +239,7 @@
           </div>
           <div class="col span-6 mb-0">
             <label class="acc-label">
-              {{t "clusterNew.huaweicce.subnetId.label"}}
+              {{t "clusterNew.huaweicce.subnetId.label"}}{{field-required}}
             </label>
             {{#input-or-display
               editable=(and (eq step 2) (not editing))
