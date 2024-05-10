@@ -100,11 +100,6 @@ export default Ember.Component.extend(ClusterDriver, {
       value: 'v1.27',
       rancherEnabled: true,
     },
-    {
-      label: 'v1.25',
-      value: 'v1.25',
-      rancherEnabled: true,
-    },
   ],
   eipChargeModeChoices: [
     {
@@ -756,40 +751,16 @@ export default Ember.Component.extend(ClusterDriver, {
 
   operatingSystemChoices: computed('config.version', function() {
     const types = ['EulerOS 2.9', 'CentOS 7.6'];
-    if (get(this, 'config.version') === 'v1.25') {
-      types.push('EulerOS 2.5')
-    }
     const containerNetworkMode = get(this, 'config.containerNetworkMode');
 
     if(containerNetworkMode !== 'overlay_l2'){
       types.push('Huawei Cloud EulerOS 2.0', 'Ubuntu 22.04');
-      if (get(this, 'config.version') === 'v1.25') {
-        types.push('Ubuntu 18.04')
-      }
     }
 
     return types.map(item=>({
       label: item,
       value: item
     }))
-  }),
-
-  containerdOnly: computed('config.version', function() {
-    const currentVersion = 'v1.25';
-    const formattedCurrentVersion = currentVersion.replace('v', '');
-    const formattedInputVersion = get(this, 'config.version').replace('v', '');
-
-    const currentVersionParts = formattedCurrentVersion?.split('.')?.map(Number);
-    const inputVersionParts = formattedInputVersion?.split('.')?.map(Number);
-
-    for (let i = 0; i < currentVersionParts?.length; i++) {
-        if (inputVersionParts[i] > currentVersionParts[i]) {
-            return true;
-        } else if (inputVersionParts[i] < currentVersionParts[i]) {
-            return false;
-        }
-    }
-    return false
   }),
 
   securityGroupShowValue: computed('securityGroupChoices.[]', 'config.securityGroup', 'intl.locale', function() {
