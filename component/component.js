@@ -122,6 +122,11 @@ export default Ember.Component.extend(ClusterDriver, {
       value: 'v1.27',
       rancherEnabled: true,
     },
+    {
+      label: 'v1.29',
+      value: 'v1.29',
+      rancherEnabled: true,
+    },
   ],
   eipChargeModeChoices: [
     {
@@ -200,7 +205,7 @@ export default Ember.Component.extend(ClusterDriver, {
         regionID:              '',
         dataVolumeSize:        100,
         vpcId:                 null,
-        version:               'v1.28',
+        version:               'v1.29',
         billingMode:           0,
         containerNetworkMode:  'vpc-router',
         clusterFlavor:         'cce.s2.small',
