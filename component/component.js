@@ -118,11 +118,6 @@ export default Ember.Component.extend(ClusterDriver, {
       rancherEnabled: true,
     },
     {
-      label: 'v1.27',
-      value: 'v1.27',
-      rancherEnabled: true,
-    },
-    {
       label: 'v1.29',
       value: 'v1.29',
       rancherEnabled: true,
