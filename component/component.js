@@ -752,7 +752,7 @@ export default Ember.Component.extend(ClusterDriver, {
     }
 
     const intl = get(this, 'intl');
-    const regionId = get(cloudCredential, 'huaweicredentialConfig.regionID') || get(this, 'config.region') || '';
+    const regionId = get(cloudCredential, 'huaweicredentialConfig.regionID') || get(this, 'config.regionID') || '';
     cloudCredential.regionName = intl.t(`clusterNew.huaweicce.region.${regionId.replace(/\-/g, '_')}`);
     cloudCredential.regionID = regionId;
 
