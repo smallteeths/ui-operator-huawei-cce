@@ -26,11 +26,11 @@ jobs:
           yarn install
           yarn run build
       - name: checksum
-        if: startsWith(github.ref,'regs/tags/')
+        if: startsWith(github.ref,'refs/tags/')
         run: |
           sha256sum dist/* > dist/sha256sum.txt
       - name: Release
-        if: startsWith(github.ref,'regs/tags/')
+        if: startsWith(github.ref,'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           files: "dist/*"
